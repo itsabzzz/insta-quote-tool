@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/insta-quote-tool/static/css/main.a602c452.css",
+    "main.js": "/insta-quote-tool/static/js/main.7609900f.js",
+    "static/js/453.8ab44547.chunk.js": "/insta-quote-tool/static/js/453.8ab44547.chunk.js",
+    "index.html": "/insta-quote-tool/index.html",
+    "main.a602c452.css.map": "/insta-quote-tool/static/css/main.a602c452.css.map",
+    "main.7609900f.js.map": "/insta-quote-tool/static/js/main.7609900f.js.map",
+    "453.8ab44547.chunk.js.map": "/insta-quote-tool/static/js/453.8ab44547.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.a602c452.css",
+    "static/js/main.7609900f.js"
+  ]
+}
