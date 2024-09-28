@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "react-calendar": "^5.0.0"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.1.1"
   }
 }
