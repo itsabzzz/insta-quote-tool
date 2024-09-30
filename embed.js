@@ -3,8 +3,9 @@
   var openBtn = document.createElement('button');
   openBtn.innerText = 'Get an Instant Quote';
   openBtn.style.position = 'fixed';
-  openBtn.style.bottom = '10px';
-  openBtn.style.right = '10px';
+  openBtn.style.top = '50%'; // Vertically center the button
+  openBtn.style.left = '50%'; // Horizontally center the button
+  openBtn.style.transform = 'translate(-50%, -50%)'; // Adjust position to make it exactly center
   openBtn.style.padding = '10px 20px';
   openBtn.style.backgroundColor = '#007bff';
   openBtn.style.color = '#fff';
