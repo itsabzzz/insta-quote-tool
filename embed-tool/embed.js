@@ -2,18 +2,18 @@
   // Create the button to open the modal
   var openBtn = document.createElement('button');
   openBtn.innerText = 'Get an Instant Quote';
-  openBtn.style.position = 'fixed';
-  openBtn.style.bottom = '20px'; // Changed to place at bottom
-  openBtn.style.right = '20px';
+  openBtn.style.marginLeft = '10px'; // Space between text and button
   openBtn.style.padding = '10px 20px';
   openBtn.style.backgroundColor = '#007bff';
   openBtn.style.color = '#fff';
   openBtn.style.border = 'none';
   openBtn.style.cursor = 'pointer';
-  openBtn.style.zIndex = '1000';
-
-  // Append the button to the body
-  document.body.appendChild(openBtn);
+  
+  // Find the paragraph to append the button next to it
+  var paragraph = document.querySelector('p'); // Assuming you want the button next to the first <p> tag
+  
+  // Append the button directly after the paragraph text
+  paragraph.appendChild(openBtn);
 
   // Create the overlay (grays out the page)
   var overlay = document.createElement('div');
