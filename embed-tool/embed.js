@@ -124,25 +124,28 @@
     var condition = selectCondition.value;
     var time = selectTime.value;
 
-    // Simulated quote logic
-    var price = 0;
-    if (size === 'small') price = 20;
-    if (size === 'medium') price = 40;
-    if (size === 'large') price = 60;
-
-    if (condition === 'dirty') price += 15;
-    if (condition === 'very-dirty') price += 30;
-
-    // Show the quote and the selected time slot
-    modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${price}</p><p>Selected time slot: ${time}</p>`;
-    var closeQuoteBtn = document.createElement('button');
-    closeQuoteBtn.innerText = 'Close';
-    closeQuoteBtn.onclick = function() {
-      modal.style.display = 'none';
-      overlay.style.display = 'none';
-    };
-    modal.appendChild(closeQuoteBtn);
-  };
+    // Send data to the backend to calculate the quote
+    fetch('https://insta-quote-tool-production.up.railway.app/get-quote', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ size: size, condition: condition })
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Show the fetched quote and selected time slot
+      modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p><p>Selected time slot: ${time}</p>`;
+      var closeQuoteBtn = document.createElement('button');
+      closeQuoteBtn.innerText = 'Close';
+      closeQuoteBtn.onclick = function() {
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
+      };
+      modal.appendChild(closeQuoteBtn);
+    })
+    .catch(error => console.error('Error:', error));
+};
 
   form.appendChild(submitBtn);
   modal.appendChild(form);
