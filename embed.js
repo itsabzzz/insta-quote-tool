@@ -116,7 +116,6 @@
   submitBtn.onclick = function(e) {
     e.preventDefault();
 
-    // Simulate fetching the quote
     var size = selectSize.value;
     var condition = selectCondition.value;
     
@@ -129,7 +128,7 @@
     if (condition === 'dirty') price += 15;
     if (condition === 'very-dirty') price += 30;
 
-    // Show final quote inside the modal
+    // Clear the modal content and show the quote
     modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${price}</p>`;
     var closeQuoteBtn = document.createElement('button');
     closeQuoteBtn.innerText = 'Close';
