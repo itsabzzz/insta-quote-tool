@@ -2,20 +2,18 @@
   // Create the button to open the modal
   var openBtn = document.createElement('button');
   openBtn.innerText = 'Get an Instant Quote';
-  openBtn.style.marginLeft = '10px'; // Space between text and button
+  openBtn.style.marginLeft = '10px';
   openBtn.style.padding = '10px 20px';
   openBtn.style.backgroundColor = '#007bff';
   openBtn.style.color = '#fff';
   openBtn.style.border = 'none';
   openBtn.style.cursor = 'pointer';
-  
-  // Find the paragraph to append the button next to it
-  var paragraph = document.querySelector('p'); // Assuming you want the button next to the first <p> tag
-  
-  // Append the button directly after the paragraph text
+
+  // Append the button next to the paragraph
+  var paragraph = document.querySelector('p');
   paragraph.appendChild(openBtn);
 
-  // Create the overlay (grays out the page)
+  // Create the overlay
   var overlay = document.createElement('div');
   overlay.style.position = 'fixed';
   overlay.style.top = '0';
@@ -23,9 +21,8 @@
   overlay.style.width = '100%';
   overlay.style.height = '100%';
   overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-  overlay.style.display = 'none'; // Hidden initially
+  overlay.style.display = 'none';
   overlay.style.zIndex = '999';
-
   document.body.appendChild(overlay);
 
   // Create the modal
@@ -40,9 +37,7 @@
   modal.style.borderRadius = '10px';
   modal.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
   modal.style.zIndex = '1001';
-  modal.style.display = 'none'; // Hidden initially
-
-  // Append modal to body
+  modal.style.display = 'none';
   document.body.appendChild(modal);
 
   // Create close button for the modal
@@ -68,41 +63,54 @@
     overlay.style.display = 'block';
   };
 
-  // Form content (Dropdown for Car Size and Condition)
+  // Form content (Car Size, Condition, and Calendar for Booking)
   var form = document.createElement('form');
 
+  // Car size dropdown
   var labelSize = document.createElement('label');
   labelSize.innerText = 'Select Car Size:';
   var selectSize = document.createElement('select');
   selectSize.style.display = 'block';
   selectSize.style.marginTop = '10px';
-
-  var sizes = ['Small', 'Medium', 'Large'];
-  sizes.forEach(function(size) {
+  ['Small', 'Medium', 'Large'].forEach(function(size) {
     var option = document.createElement('option');
     option.value = size.toLowerCase();
     option.text = size;
     selectSize.appendChild(option);
   });
 
+  // Car condition dropdown
   var labelCondition = document.createElement('label');
   labelCondition.innerText = 'Select Condition:';
   var selectCondition = document.createElement('select');
   selectCondition.style.display = 'block';
   selectCondition.style.marginTop = '10px';
-
-  var conditions = ['Clean', 'Moderate', 'Dirty'];
-  conditions.forEach(function(condition) {
+  ['Clean', 'Moderate', 'Dirty'].forEach(function(condition) {
     var option = document.createElement('option');
     option.value = condition.toLowerCase();
     option.text = condition;
     selectCondition.appendChild(option);
   });
 
+  // Time slot dropdown
+  var labelTime = document.createElement('label');
+  labelTime.innerText = 'Select Time Slot:';
+  var selectTime = document.createElement('select');
+  selectTime.style.display = 'block';
+  selectTime.style.marginTop = '10px';
+  ['9:00 AM', '11:00 AM', '1:00 PM', '3:00 PM'].forEach(function(time) {
+    var option = document.createElement('option');
+    option.value = time;
+    option.text = time;
+    selectTime.appendChild(option);
+  });
+
   form.appendChild(labelSize);
   form.appendChild(selectSize);
   form.appendChild(labelCondition);
   form.appendChild(selectCondition);
+  form.appendChild(labelTime);
+  form.appendChild(selectTime);
 
   // Submit button
   var submitBtn = document.createElement('button');
@@ -114,7 +122,8 @@
 
     var size = selectSize.value;
     var condition = selectCondition.value;
-    
+    var time = selectTime.value;
+
     // Simulated quote logic
     var price = 0;
     if (size === 'small') price = 20;
@@ -124,8 +133,8 @@
     if (condition === 'dirty') price += 15;
     if (condition === 'very-dirty') price += 30;
 
-    // Clear the modal content and show the quote
-    modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${price}</p>`;
+    // Show the quote and the selected time slot
+    modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${price}</p><p>Selected time slot: ${time}</p>`;
     var closeQuoteBtn = document.createElement('button');
     closeQuoteBtn.innerText = 'Close';
     closeQuoteBtn.onclick = function() {
@@ -138,4 +147,3 @@
   form.appendChild(submitBtn);
   modal.appendChild(form);
 })();
-
