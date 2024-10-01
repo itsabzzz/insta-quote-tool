@@ -2,19 +2,16 @@
   // Create the button to open the modal
   var openBtn = document.createElement('button');
   openBtn.innerText = 'Get an Instant Quote';
-  
-  // Center the button on the screen
   openBtn.style.position = 'fixed';
-  openBtn.style.top = '50%'; // Vertically center the button
-  openBtn.style.left = '50%'; // Horizontally center the button
-  openBtn.style.transform = 'translate(-50%, -50%)'; // Adjust position to make it exactly center
+  openBtn.style.bottom = '20px'; // Changed to place at bottom
+  openBtn.style.right = '20px';
   openBtn.style.padding = '10px 20px';
   openBtn.style.backgroundColor = '#007bff';
   openBtn.style.color = '#fff';
   openBtn.style.border = 'none';
   openBtn.style.cursor = 'pointer';
   openBtn.style.zIndex = '1000';
-  
+
   // Append the button to the body
   document.body.appendChild(openBtn);
 
@@ -73,8 +70,7 @@
 
   // Form content (Dropdown for Car Size and Condition)
   var form = document.createElement('form');
-  
-  // Car size dropdown
+
   var labelSize = document.createElement('label');
   labelSize.innerText = 'Select Car Size:';
   var selectSize = document.createElement('select');
@@ -119,12 +115,12 @@
     var size = selectSize.value;
     var condition = selectCondition.value;
     
-    // Simulated quote logic (you can replace with real backend call)
+    // Simulated quote logic
     var price = 0;
     if (size === 'small') price = 20;
     if (size === 'medium') price = 40;
     if (size === 'large') price = 60;
-    
+
     if (condition === 'dirty') price += 15;
     if (condition === 'very-dirty') price += 30;
 
