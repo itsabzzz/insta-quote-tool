@@ -2,6 +2,8 @@
   // Create the button to open the modal
   var openBtn = document.createElement('button');
   openBtn.innerText = 'Get an Instant Quote';
+  
+  // Center the button on the screen
   openBtn.style.position = 'fixed';
   openBtn.style.top = '50%'; // Vertically center the button
   openBtn.style.left = '50%'; // Horizontally center the button
@@ -69,10 +71,10 @@
     overlay.style.display = 'block';
   };
 
-  // Form content
+  // Form content (Dropdown for Car Size and Condition)
   var form = document.createElement('form');
   
-  // First step: Select car size and condition
+  // Car size dropdown
   var labelSize = document.createElement('label');
   labelSize.innerText = 'Select Car Size:';
   var selectSize = document.createElement('select');
@@ -114,30 +116,31 @@
   submitBtn.onclick = function(e) {
     e.preventDefault();
 
-    // Send data to the server and get a quote
-    fetch('http://localhost:5000/get-quote', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ size: selectSize.value, condition: selectCondition.value })
-    })
-    .then(response => response.json())
-    .then(data => {
-      // Update modal content to show the final quote
-      modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p>`;
-      var closeQuoteBtn = document.createElement('button');
-      closeQuoteBtn.innerText = 'Close';
-      closeQuoteBtn.onclick = function() {
-        modal.style.display = 'none';
-        overlay.style.display = 'none';
-      };
-      modal.appendChild(closeQuoteBtn);
-    })
-    .catch(error => console.error('Error:', error));
+    // Simulate fetching the quote
+    var size = selectSize.value;
+    var condition = selectCondition.value;
+    
+    // Simulated quote logic (you can replace with real backend call)
+    var price = 0;
+    if (size === 'small') price = 20;
+    if (size === 'medium') price = 40;
+    if (size === 'large') price = 60;
+    
+    if (condition === 'dirty') price += 15;
+    if (condition === 'very-dirty') price += 30;
+
+    // Show final quote inside the modal
+    modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${price}</p>`;
+    var closeQuoteBtn = document.createElement('button');
+    closeQuoteBtn.innerText = 'Close';
+    closeQuoteBtn.onclick = function() {
+      modal.style.display = 'none';
+      overlay.style.display = 'none';
+    };
+    modal.appendChild(closeQuoteBtn);
   };
 
   form.appendChild(submitBtn);
   modal.appendChild(form);
-
 })();
+
