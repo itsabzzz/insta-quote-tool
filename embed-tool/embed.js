@@ -135,6 +135,7 @@
     .then(response => response.json())
     .then(data => {
       // Show the fetched quote and selected time slot
+      console.log('Response from backend:', data); // Add this line to debug
       modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p><p>Selected time slot: ${time}</p>`;
       var closeQuoteBtn = document.createElement('button');
       closeQuoteBtn.innerText = 'Close';
