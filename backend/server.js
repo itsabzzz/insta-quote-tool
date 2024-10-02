@@ -28,6 +28,17 @@ app.post('/get-quote', (req, res) => {
   res.status(200).json({ price }); // Send back JSON response
 });
 
+app.post('/submit-booking', (req, res) => {
+  const { size, condition, time } = req.body;
+
+  // For simplicity, let's log the booking to the console or save it to a database (this will be part of the future feature)
+  console.log(`Booking received: ${size} car, ${condition} condition, at ${time}.`);
+  
+  // Respond with a success message
+  res.status(200).json({ message: 'Booking submitted successfully!' });
+});
+
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

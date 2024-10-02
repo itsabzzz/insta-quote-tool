@@ -120,9 +120,14 @@
   submitBtn.onclick = function(e) {
     e.preventDefault();
 
-    var size = selectSize.value;
-    var condition = selectCondition.value;
-    var time = selectTime.value;
+    const size = selectSize.value;
+    const condition = selectCondition.value;
+    const time = selectTime.value;
+
+    if (!size || !condition || !time) {
+        alert('Please select all fields.');
+        return;
+    }
 
     // Send data to the backend to calculate the quote
     fetch('https://insta-quote-tool-production.up.railway.app/get-quote', {
@@ -134,16 +139,29 @@
     })
     .then(response => response.json())
     .then(data => {
-      console.log('Response from backend:', data); // Check response
-      
-      // Clear previous modal content
-      modal.innerHTML = '';
-
-      // Display quote
+      // Show the fetched quote and selected time slot
       modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p><p>Selected time slot: ${time}</p>`;
-      
-      // Add close button for the updated content
-      var closeQuoteBtn = document.createElement('button');
+
+      const bookNowBtn = document.createElement('button');
+      bookNowBtn.innerText = 'Book Now';
+      bookNowBtn.onclick = function() {
+        // Submit the booking
+        fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ size, condition, time })
+        })
+        .then(response => response.json())
+        .then(data => {
+          modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
+        })
+        .catch(error => console.error('Error submitting booking:', error));
+      };
+      modal.appendChild(bookNowBtn);
+
+      const closeQuoteBtn = document.createElement('button');
       closeQuoteBtn.innerText = 'Close';
       closeQuoteBtn.onclick = function() {
         modal.style.display = 'none';
@@ -153,6 +171,7 @@
     })
     .catch(error => console.error('Error:', error));
 };
+
 
 
   form.appendChild(submitBtn);
