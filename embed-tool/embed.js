@@ -134,9 +134,15 @@
     })
     .then(response => response.json())
     .then(data => {
-      // Show the fetched quote and selected time slot
-      console.log('Response from backend:', data); // Add this line to debug
+      console.log('Response from backend:', data); // Check response
+      
+      // Clear previous modal content
+      modal.innerHTML = '';
+
+      // Display quote
       modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p><p>Selected time slot: ${time}</p>`;
+      
+      // Add close button for the updated content
       var closeQuoteBtn = document.createElement('button');
       closeQuoteBtn.innerText = 'Close';
       closeQuoteBtn.onclick = function() {
@@ -147,6 +153,7 @@
     })
     .catch(error => console.error('Error:', error));
 };
+
 
   form.appendChild(submitBtn);
   modal.appendChild(form);
