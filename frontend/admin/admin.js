@@ -35,40 +35,45 @@ document.getElementById('login-btn').addEventListener('click', function() {
       .catch(error => console.error('Error fetching bookings:', error));
   }
   
-  // Function to handle availability updates
-  document.getElementById('availability-form').addEventListener('submit', function(e) {
-    e.preventDefault();
+// Prevent form refresh when updating availability
+document.getElementById('availability-form').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent page reload
+  
+    // Get values from input fields
     const date = document.getElementById('date').value;
     const time = document.getElementById('time').value;
   
-    fetch('https://insta-quote-tool-production.up.railway.app/update-availability', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ date, time }),
-    })
-    .then(response => response.json())
-    .then(data => alert('Availability updated!'))
-    .catch(error => console.error('Error updating availability:', error));
+    if (!date || !time) {
+      alert('Please select both date and time.');
+      return;
+    }
+  
+    // Simulate saving the availability (in the future, this will be sent to the backend)
+    console.log(`Availability Updated - Date: ${date}, Time: ${time}`);
+  
+    alert('Availability updated successfully!');
   });
   
+  
   // Function to handle pricing updates
-  document.getElementById('pricing-form').addEventListener('submit', function(e) {
-    e.preventDefault();
+// Prevent form refresh when updating pricing
+document.getElementById('pricing-form').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent page reload
+  
+    // Get values from input fields
     const smallPrice = document.getElementById('small-price').value;
     const mediumPrice = document.getElementById('medium-price').value;
     const largePrice = document.getElementById('large-price').value;
   
-    fetch('https://insta-quote-tool-production.up.railway.app/update-pricing', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ smallPrice, mediumPrice, largePrice }),
-    })
-    .then(response => response.json())
-    .then(data => alert('Pricing updated!'))
-    .catch(error => console.error('Error updating pricing:', error));
+    if (!smallPrice || !mediumPrice || !largePrice) {
+      alert('Please enter prices for all car sizes.');
+      return;
+    }
+  
+    // Simulate saving the pricing (in the future, this will be sent to the backend)
+    console.log(`Pricing Updated - Small: $${smallPrice}, Medium: $${mediumPrice}, Large: $${largePrice}`);
+  
+    alert('Pricing updated successfully!');
   });
+  
   
