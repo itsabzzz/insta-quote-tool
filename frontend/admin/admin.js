@@ -2,15 +2,19 @@ document.getElementById('login-btn').addEventListener('click', function() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
   
-    // Simple authentication logic for now
-    if (email === 'owner@example.com' && password === 'password') {
+    // For now, just hardcode an example email and password
+    const validEmail = 'owner@example.com';
+    const validPassword = 'password123';
+  
+    if (email === validEmail && password === validPassword) {
+      // Show dashboard and hide login form
       document.getElementById('login-form').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
-      loadBookings();
     } else {
       alert('Invalid login');
     }
   });
+  
   
   // Function to load bookings from backend
   function loadBookings() {
