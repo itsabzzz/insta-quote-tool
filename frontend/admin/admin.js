@@ -1,79 +1,86 @@
+// Handle login (mock authentication for now)
 document.getElementById('login-btn').addEventListener('click', function() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
   
-    // For now, just hardcode an example email and password
-    const validEmail = 'owner@example.com';
-    const validPassword = 'password123';
-  
-    if (email === validEmail && password === validPassword) {
-      // Show dashboard and hide login form
+    // Mock login check (you can replace with real authentication later)
+    if (email === 'admin@example.com' && password === 'password') {
       document.getElementById('login-form').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
+      loadDashboardData();
     } else {
       alert('Invalid login');
     }
   });
   
-  
-  // Function to load bookings from backend
-  function loadBookings() {
+  // Function to load initial data for the dashboard
+  function loadDashboardData() {
+    // Fetch bookings and display them
     fetch('https://insta-quote-tool-production.up.railway.app/get-bookings')
       .then(response => response.json())
       .then(data => {
         const bookingsTable = document.getElementById('bookings-table');
-        bookingsTable.innerHTML = '';
+        bookingsTable.innerHTML = ''; // Clear existing rows
+  
         data.bookings.forEach(booking => {
-          bookingsTable.innerHTML += `
-            <tr>
-              <td>${booking.size}</td>
-              <td>${booking.condition}</td>
-              <td>${booking.time}</td>
-            </tr>`;
+          const row = bookingsTable.insertRow();
+          const sizeCell = row.insertCell(0);
+          const conditionCell = row.insertCell(1);
+          const timeCell = row.insertCell(2);
+          sizeCell.innerHTML = booking.size;
+          conditionCell.innerHTML = booking.condition;
+          timeCell.innerHTML = booking.time;
         });
       })
       .catch(error => console.error('Error fetching bookings:', error));
+  
+    // Fetch pricing and populate the fields
+    fetch('https://insta-quote-tool-production.up.railway.app/get-pricing')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('small-price').value = data.small;
+        document.getElementById('medium-price').value = data.medium;
+        document.getElementById('large-price').value = data.large;
+      })
+      .catch(error => console.error('Error fetching pricing:', error));
   }
   
-// Prevent form refresh when updating availability
-document.getElementById('availability-form').addEventListener('submit', function(event) {
+  // Handle pricing updates
+  document.getElementById('pricing-form').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent page reload
   
-    // Get values from input fields
-    const date = document.getElementById('date').value;
-    const time = document.getElementById('time').value;
-  
-    if (!date || !time) {
-      alert('Please select both date and time.');
-      return;
-    }
-  
-    // Simulate saving the availability (in the future, this will be sent to the backend)
-    console.log(`Availability Updated - Date: ${date}, Time: ${time}`);
-  
-    alert('Availability updated successfully!');
-  });
-  
-  
-  // Function to handle pricing updates
-// Prevent form refresh when updating pricing
-document.getElementById('pricing-form').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent page reload
-  
-    // Get values from input fields
     const smallPrice = document.getElementById('small-price').value;
     const mediumPrice = document.getElementById('medium-price').value;
     const largePrice = document.getElementById('large-price').value;
   
-    if (!smallPrice || !mediumPrice || !largePrice) {
-      alert('Please enter prices for all car sizes.');
-      return;
-    }
-  
-    // Simulate saving the pricing (in the future, this will be sent to the backend)
-    console.log(`Pricing Updated - Small: $${smallPrice}, Medium: $${mediumPrice}, Large: $${largePrice}`);
-  
-    alert('Pricing updated successfully!');
+    fetch('https://insta-quote-tool-production.up.railway.app/update-pricing', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ smallPrice, mediumPrice, largePrice })
+    })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error updating pricing:', error));
   });
   
+  // Handle availability updates
+  document.getElementById('availability-form').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent page reload
+  
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+  
+    fetch('https://insta-quote-tool-production.up.railway.app/update-availability', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ date, time })
+    })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error updating availability:', error));
+  });
   
