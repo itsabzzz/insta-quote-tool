@@ -48,3 +48,25 @@ app.post('/api/update-pricing', (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
+app.get('/get-bookings', (req, res) => {
+  // This will eventually fetch bookings from a database
+  const bookings = [
+    { size: 'small', condition: 'clean', time: '9:00 AM' },
+    { size: 'medium', condition: 'dirty', time: '1:00 PM' },
+  ];
+  res.json({ bookings });
+});
+
+app.post('/update-availability', (req, res) => {
+  const { date, time } = req.body;
+  console.log(`Availability updated: ${date}, ${time}`);
+  res.json({ message: 'Availability updated successfully' });
+});
+
+app.post('/update-pricing', (req, res) => {
+  const { smallPrice, mediumPrice, largePrice } = req.body;
+  console.log(`New Prices: Small: $${smallPrice}, Medium: $${mediumPrice}, Large: $${largePrice}`);
+  res.json({ message: 'Pricing updated successfully' });
+});
+
