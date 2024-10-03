@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Business Dashboard</title>
   <link rel="stylesheet" href="admin.css">
+
+  <!-- FullCalendar CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.1/main.min.css" rel="stylesheet">
 </head>
 <body>
   <div id="login-form">
@@ -25,13 +28,8 @@
 
     <div id="availability">
       <h2>Manage Availability</h2>
-      <form id="availability-form">
-        <label for="date">Date:</label>
-        <input type="date" id="date">
-        <label for="time">Time:</label>
-        <input type="time" id="time">
-        <button type="submit">Update Availability</button>
-      </form>
+      <!-- Add a calendar placeholder for managing availability -->
+      <div id='calendar'></div>
     </div>
 
     <div id="pricing">
@@ -48,6 +46,8 @@
     </div>
   </div>
 
+  <!-- FullCalendar JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.1/main.min.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>
