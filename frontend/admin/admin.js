@@ -2,6 +2,10 @@
 document.getElementById('login-btn').addEventListener('click', function() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
+
+      // Dummy login credentials
+    const dummyEmail = "admin@business.com";
+    const dummyPassword = "password123";
   
     // Mock login check (you can replace with real authentication later)
     if (email === 'admin@example.com' && password === 'password') {
