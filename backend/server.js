@@ -3,15 +3,8 @@ const cors = require('cors');
 const app = express();
 const port = 5000;
 
-// Define specific CORS options if needed
-const corsOptions = {
-  origin: '*', // For development: allow all origins. Change to specific domains in production.
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type']
-};
-
 app.use(express.json()); // To parse JSON bodies
-app.use(cors(corsOptions)); // Enable CORS with specific options
+app.use(cors()); // Enable CORS to allow frontend and backend communication
 
 // POST route to handle quotes
 app.post('/get-quote', (req, res) => {
@@ -22,22 +15,35 @@ app.post('/get-quote', (req, res) => {
   if (size === 'small') price = 50;
   if (size === 'medium') price = 100;
   if (size === 'large') price = 150;
-
   if (condition === 'dirty') price += 20;
 
   res.status(200).json({ price }); // Send back JSON response
 });
 
+// POST route to handle bookings
 app.post('/submit-booking', (req, res) => {
   const { size, condition, time } = req.body;
-
-  // For simplicity, let's log the booking to the console or save it to a database (this will be part of the future feature)
   console.log(`Booking received: ${size} car, ${condition} condition, at ${time}.`);
-  
-  // Respond with a success message
   res.status(200).json({ message: 'Booking submitted successfully!' });
 });
 
+// GET route to fetch all bookings (for dashboard management)
+app.get('/api/bookings', (req, res) => {
+  // Mock data - eventually, this will pull from a database
+  const bookings = [
+    { id: 1, customer: 'John Doe', service: 'Car Detailing', time: '2024-10-05 10:00' },
+    { id: 2, customer: 'Jane Smith', service: 'Car Detailing', time: '2024-10-05 14:00' }
+  ];
+  res.status(200).json(bookings);
+});
+
+// POST route to update pricing (for dashboard)
+app.post('/api/update-pricing', (req, res) => {
+  const { service, newPrice } = req.body;
+  // Logic to update price in database or in-memory storage
+  console.log(`Price for ${service} updated to ${newPrice}`);
+  res.status(200).json({ message: `Price for ${service} updated to ${newPrice}` });
+});
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Dashboard</title>
+</head>
+<body>
+  <h1>Business Dashboard</h1>
+
+  <!-- Booking Management Section -->
+  <h2>Bookings</h2>
+  <table id="bookingsTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Service</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Booking rows will be dynamically inserted here -->
+    </tbody>
+  </table>
+
+  <!-- Pricing Management Section -->
+  <h2>Update Pricing</h2>
+  <form id="updatePricingForm">
+    <label for="service">Service:</label>
+    <input type="text" id="service" name="service">
+    <label for="newPrice">New Price:</label>
+    <input type="number" id="newPrice" name="newPrice">
+    <button type="submit">Update Price</button>
+  </form>
+
+  <script>
+    // Fetch bookings from the backend
+    fetch('http://localhost:5000/api/bookings')
+      .then(response => response.json())
+      .then(data => {
+        const tableBody = document.querySelector('#bookingsTable tbody');
+        data.forEach(booking => {
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>${booking.id}</td><td>${booking.customer}</td><td>${booking.service}</td><td>${booking.time}</td>`;
+          tableBody.appendChild(row);
+        });
+      });
+
+    // Handle pricing updates
+    document.getElementById('updatePricingForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const service = document.getElementById('service').value;
+      const newPrice = document.getElementById('newPrice').value;
+
+      fetch('https://insta-quote-tool-production.up.railway.app/get-quote', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ size: size, condition: condition })
+})
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+        })
+        .catch(error => console.error('Error:', error));
+    });
+  </script>
+</body>
+</html>
