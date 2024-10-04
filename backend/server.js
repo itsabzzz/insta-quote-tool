@@ -1,7 +1,44 @@
 const express = require('express');
 const cors = require('cors');
+const sqlite3 = require('sqlite3').verbose();  // Import SQLite
 const app = express();
 const port = 5000;
+
+// Initialize SQLite database
+const db = new sqlite3.Database('./car_detailing.db', (err) => {
+  if (err) {
+    console.error(err.message);
+  } else {
+    console.log('Connected to the SQLite database.');
+  }
+});
+
+// Create tables if they don't exist
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS bookings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    size TEXT,
+    condition TEXT,
+    time TEXT
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS availability (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TEXT,
+    time TEXT
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS pricing (
+    service TEXT PRIMARY KEY,
+    price INTEGER
+  )`);
+
+  // Insert default pricing if none exists
+  db.run(`INSERT OR IGNORE INTO pricing (service, price) VALUES 
+    ('small', 50), 
+    ('medium', 100), 
+    ('large', 150)`);
+});
 
 app.use(express.json()); // To parse JSON bodies
 app.use(cors()); // Enable CORS to allow frontend and backend communication
@@ -9,64 +46,79 @@ app.use(cors()); // Enable CORS to allow frontend and backend communication
 // POST route to handle quotes
 app.post('/get-quote', (req, res) => {
   const { size, condition } = req.body;
-  let price = 0;
-
-  // Example logic for calculating price
-  if (size === 'small') price = 50;
-  if (size === 'medium') price = 100;
-  if (size === 'large') price = 150;
-  if (condition === 'dirty') price += 20;
-
-  res.status(200).json({ price }); // Send back JSON response
+  
+  db.get(`SELECT price FROM pricing WHERE service = ?`, [size], (err, row) => {
+    if (err) {
+      res.status(500).json({ error: 'Error fetching price' });
+    } else {
+      let price = row.price;
+      if (condition === 'dirty') price += 20;
+      res.status(200).json({ price });
+    }
+  });
 });
 
 // POST route to handle bookings
 app.post('/submit-booking', (req, res) => {
   const { size, condition, time } = req.body;
-  console.log(`Booking received: ${size} car, ${condition} condition, at ${time}.`);
-  res.status(200).json({ message: 'Booking submitted successfully!' });
+  
+  const sql = `INSERT INTO bookings (size, condition, time) VALUES (?, ?, ?)`;
+  db.run(sql, [size, condition, time], function(err) {
+    if (err) {
+      res.status(500).json({ message: 'Error saving booking' });
+    } else {
+      res.status(200).json({ message: 'Booking submitted successfully!' });
+    }
+  });
 });
 
 // GET route to fetch all bookings (for dashboard management)
 app.get('/api/bookings', (req, res) => {
-  // Mock data - eventually, this will pull from a database
-  const bookings = [
-    { id: 1, customer: 'John Doe', service: 'Car Detailing', time: '2024-10-05 10:00' },
-    { id: 2, customer: 'Jane Smith', service: 'Car Detailing', time: '2024-10-05 14:00' }
-  ];
-  res.status(200).json(bookings);
+  const sql = `SELECT * FROM bookings`;
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: 'Error fetching bookings' });
+    } else {
+      res.status(200).json(rows);
+    }
+  });
 });
 
 // POST route to update pricing (for dashboard)
 app.post('/api/update-pricing', (req, res) => {
-  const { service, newPrice } = req.body;
-  // Logic to update price in database or in-memory storage
-  console.log(`Price for ${service} updated to ${newPrice}`);
-  res.status(200).json({ message: `Price for ${service} updated to ${newPrice}` });
+  const { smallPrice, mediumPrice, largePrice } = req.body;
+
+  const updateSmall = `UPDATE pricing SET price = ? WHERE service = 'small'`;
+  const updateMedium = `UPDATE pricing SET price = ? WHERE service = 'medium'`;
+  const updateLarge = `UPDATE pricing SET price = ? WHERE service = 'large'`;
+
+  db.run(updateSmall, [smallPrice], (err) => {
+    if (err) return res.status(500).json({ message: 'Error updating small price' });
+  });
+  db.run(updateMedium, [mediumPrice], (err) => {
+    if (err) return res.status(500).json({ message: 'Error updating medium price' });
+  });
+  db.run(updateLarge, [largePrice], (err) => {
+    if (err) return res.status(500).json({ message: 'Error updating large price' });
+
+    res.status(200).json({ message: 'Pricing updated successfully' });
+  });
+});
+
+// POST route to update availability
+app.post('/update-availability', (req, res) => {
+  const { date, time } = req.body;
+
+  const sql = `INSERT INTO availability (date, time) VALUES (?, ?)`;
+  db.run(sql, [date, time], function(err) {
+    if (err) {
+      res.status(500).json({ message: 'Error updating availability' });
+    } else {
+      res.status(200).json({ message: 'Availability updated successfully' });
+    }
+  });
 });
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
-
-app.get('/get-bookings', (req, res) => {
-  // This will eventually fetch bookings from a database
-  const bookings = [
-    { size: 'small', condition: 'clean', time: '9:00 AM' },
-    { size: 'medium', condition: 'dirty', time: '1:00 PM' },
-  ];
-  res.json({ bookings });
-});
-
-app.post('/update-availability', (req, res) => {
-  const { date, time } = req.body;
-  console.log(`Availability updated: ${date}, ${time}`);
-  res.json({ message: 'Availability updated successfully' });
-});
-
-app.post('/update-pricing', (req, res) => {
-  const { smallPrice, mediumPrice, largePrice } = req.body;
-  console.log(`New Prices: Small: $${smallPrice}, Medium: $${mediumPrice}, Large: $${largePrice}`);
-  res.json({ message: 'Pricing updated successfully' });
-});
-
