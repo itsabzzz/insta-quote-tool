@@ -3,6 +3,7 @@ const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();  // Import SQLite
 const app = express();
 const port = 5000;
+const nodemailer = require('nodemailer');
 
 // Initialize SQLite database
 const db = new sqlite3.Database('./car_detailing.db', (err) => {
@@ -10,6 +11,14 @@ const db = new sqlite3.Database('./car_detailing.db', (err) => {
     console.error(err.message);
   } else {
     console.log('Connected to the SQLite database.');
+  }
+});
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, // Secure with environment variable
+    pass: process.env.EMAIL_PASS  // Secure with environment variable
   }
 });
 
@@ -58,19 +67,50 @@ app.post('/get-quote', (req, res) => {
   });
 });
 
-// POST route to handle bookings
+
 app.post('/submit-booking', (req, res) => {
-  const { size, condition, time } = req.body;
+  const { size, condition, time, email } = req.body;
   
-  const sql = `INSERT INTO bookings (size, condition, time) VALUES (?, ?, ?)`;
-  db.run(sql, [size, condition, time], function(err) {
+  const sql = `INSERT INTO bookings (size, condition, time, customer_email) VALUES (?, ?, ?, ?)`;
+  db.run(sql, [size, condition, time, email], function(err) {
     if (err) {
       res.status(500).json({ message: 'Error saving booking' });
     } else {
-      res.status(200).json({ message: 'Booking submitted successfully!' });
+      const bookingId = this.lastID;
+
+      // Send confirmation email
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'your-email@gmail.com', // Replace with your email
+          pass: 'your-password'         // Replace with your email password
+        }
+      });
+
+      const mailOptions = {
+        from: 'your-email@gmail.com',   // Replace with your email
+        to: email,
+        subject: 'Booking Confirmation',
+        html: `
+          <h1>Booking Confirmation</h1>
+          <p>Car Size: ${size}</p>
+          <p>Condition: ${condition}</p>
+          <p>Time: ${time}</p>
+          <p><a href="https://yourdomain.com/reschedule?bookingId=${bookingId}">Reschedule</a> | <a href="https://yourdomain.com/cancel?bookingId=${bookingId}">Cancel</a></p>
+        `
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          res.status(500).json({ message: 'Error sending email' });
+        } else {
+          res.status(200).json({ message: 'Booking submitted successfully!' });
+        }
+      });
     }
   });
 });
+
 
 // GET route to fetch all bookings (for dashboard management)
 app.get('/api/bookings', (req, res) => {
@@ -121,4 +161,49 @@ app.post('/update-availability', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+});
+
+
+// Get a customer's bookings based on email
+app.get('/api/customer-bookings/:email', (req, res) => {
+  const email = req.params.email;
+
+  // Query database for bookings based on customer's email
+  const sql = `SELECT * FROM bookings WHERE customer_email = ?`;
+  db.all(sql, [email], (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: 'Error fetching customer bookings' });
+    } else {
+      res.status(200).json(rows);
+    }
+  });
+});
+
+// POST route to cancel a booking
+app.post('/cancel', (req, res) => {
+  const { bookingId, reason } = req.body;
+
+  const sql = `DELETE FROM bookings WHERE id = ?`;
+  db.run(sql, [bookingId], function(err) {
+    if (err) {
+      res.status(500).json({ message: 'Error canceling booking' });
+    } else {
+      console.log(`Booking canceled. Reason: ${reason}`);
+      res.status(200).json({ message: 'Booking canceled successfully!' });
+    }
+  });
+});
+
+// POST route to reschedule a booking
+app.post('/reschedule', (req, res) => {
+  const { bookingId, newTime } = req.body;
+  
+  const sql = `UPDATE bookings SET time = ? WHERE id = ?`;
+  db.run(sql, [newTime, bookingId], function(err) {
+    if (err) {
+      res.status(500).json({ message: 'Error rescheduling booking' });
+    } else {
+      res.status(200).json({ message: 'Booking rescheduled successfully!' });
+    }
+  });
 });
