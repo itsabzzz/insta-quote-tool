@@ -205,3 +205,59 @@ app.post('/reschedule', (req, res) => {
     }
   });
 });
+
+// GET route to show a cancel confirmation page
+app.get('/cancel', (req, res) => {
+  const bookingId = req.query.bookingId;
+  // Display confirmation page (could be HTML)
+  res.send(`
+    <h1>Are you sure you want to cancel booking #${bookingId}?</h1>
+    <form action="/confirm-cancel" method="POST">
+      <input type="hidden" name="bookingId" value="${bookingId}" />
+      <button type="submit">Yes, Cancel</button>
+    </form>
+  `);
+});
+
+// POST route to handle canceling a booking after confirmation
+app.post('/confirm-cancel', (req, res) => {
+  const { bookingId } = req.body;
+
+  const sql = `DELETE FROM bookings WHERE id = ?`;
+  db.run(sql, [bookingId], function(err) {
+    if (err) {
+      res.status(500).json({ message: 'Error canceling booking' });
+    } else {
+      res.status(200).json({ message: 'Booking canceled successfully!' });
+    }
+  });
+});
+
+// GET route to show a reschedule confirmation page
+app.get('/reschedule', (req, res) => {
+  const bookingId = req.query.bookingId;
+  // Display rescheduling form (could be HTML)
+  res.send(`
+    <h1>Reschedule booking #${bookingId}</h1>
+    <form action="/confirm-reschedule" method="POST">
+      <input type="hidden" name="bookingId" value="${bookingId}" />
+      <label for="newTime">Select New Time:</label>
+      <input type="datetime-local" name="newTime" />
+      <button type="submit">Confirm Reschedule</button>
+    </form>
+  `);
+});
+
+// POST route to handle rescheduling a booking after confirmation
+app.post('/confirm-reschedule', (req, res) => {
+  const { bookingId, newTime } = req.body;
+
+  const sql = `UPDATE bookings SET time = ? WHERE id = ?`;
+  db.run(sql, [newTime, bookingId], function(err) {
+    if (err) {
+      res.status(500).json({ message: 'Error rescheduling booking' });
+    } else {
+      res.status(200).json({ message: 'Booking rescheduled successfully!' });
+    }
+  });
+});
