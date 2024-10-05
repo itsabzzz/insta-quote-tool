@@ -112,36 +112,24 @@
   form.appendChild(labelTime);
   form.appendChild(selectTime);
 
-  // email intake before booking
-  var labelEmail = document.createElement('label');
-  labelEmail.innerText = 'Enter Email:';
-  var inputEmail = document.createElement('input');
-  inputEmail.type = 'email';
-  inputEmail.style.display = 'block';
-  inputEmail.style.marginTop = '10px';
-
-  form.appendChild(labelEmail);
-  form.appendChild(inputEmail);
-
-  // Submit button
+  // Submit button for fetching the quote
   var submitBtn = document.createElement('button');
   submitBtn.innerText = 'Get Quote';
   submitBtn.style.marginTop = '20px';
-
   form.appendChild(submitBtn);
   modal.appendChild(form);
 
+  // Add logic to "Get Quote" button
   submitBtn.onclick = function(e) {
     e.preventDefault();
 
     const size = selectSize.value;
     const condition = selectCondition.value;
     const time = selectTime.value;
-    const email = inputEmail.value;
 
-    if (!size || !condition || !time || !email) {
-      alert('Please fill in all fields.');
-      return;
+    if (!size || !condition || !time) {
+        alert('Please select all fields.');
+        return;
     }
 
     // Send data to the backend to calculate the quote
@@ -154,30 +142,58 @@
     })
     .then(response => response.json())
     .then(data => {
-      // Show the fetched quote and selected time slot
+      // Show the fetched quote and "Continue to Booking" button
       modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p><p>Selected time slot: ${time}</p>`;
 
-      const bookNowBtn = document.createElement('button');
-      bookNowBtn.innerText = 'Book Now';
+      const continueBtn = document.createElement('button');
+      continueBtn.innerText = 'Continue to Booking';
 
-      // Add to the booking process
-      bookNowBtn.onclick = function() {
-        // Submit the booking with email
-        fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ size, condition, time, email })
-        })
-        .then(response => response.json())
-        .then(data => {
-          modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
-        })
-        .catch(error => console.error('Error submitting booking:', error));
+      // When clicking "Continue to Booking"
+      continueBtn.onclick = function() {
+        modal.innerHTML = '';  // Clear the modal content
+
+        // Email intake form
+        var labelEmail = document.createElement('label');
+        labelEmail.innerText = 'Enter Email:';
+        var inputEmail = document.createElement('input');
+        inputEmail.type = 'email';
+        inputEmail.style.display = 'block';
+        inputEmail.style.marginTop = '10px';
+
+        var bookNowBtn = document.createElement('button');
+        bookNowBtn.innerText = 'Book Now';
+        bookNowBtn.style.marginTop = '20px';
+
+        // Booking submission logic after taking email
+        bookNowBtn.onclick = function() {
+          const email = inputEmail.value;
+
+          if (!email) {
+            alert('Please enter your email.');
+            return;
+          }
+
+          // Submit the booking with email
+          fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ size, condition, time, email })
+          })
+          .then(response => response.json())
+          .then(data => {
+            modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
+          })
+          .catch(error => console.error('Error submitting booking:', error));
+        };
+
+        modal.appendChild(labelEmail);
+        modal.appendChild(inputEmail);
+        modal.appendChild(bookNowBtn);
       };
 
-      modal.appendChild(bookNowBtn);
+      modal.appendChild(continueBtn);
 
       const closeQuoteBtn = document.createElement('button');
       closeQuoteBtn.innerText = 'Close';
