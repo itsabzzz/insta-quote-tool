@@ -112,6 +112,42 @@
   form.appendChild(labelTime);
   form.appendChild(selectTime);
 
+  // email intake before booking
+var labelEmail = document.createElement('label');
+labelEmail.innerText = 'Enter Email:';
+var inputEmail = document.createElement('input');
+inputEmail.type = 'email';
+inputEmail.style.display = 'block';
+inputEmail.style.marginTop = '10px';
+
+form.appendChild(labelEmail);
+form.appendChild(inputEmail);
+
+// Add to the booking process
+bookNowBtn.onclick = function() {
+  const email = inputEmail.value;
+
+  if (!email) {
+    alert('Please enter your email.');
+    return;
+  }
+
+  // Submit the booking with email
+  fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ size, condition, time, email })
+  })
+  .then(response => response.json())
+  .then(data => {
+    modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
+  })
+  .catch(error => console.error('Error submitting booking:', error));
+};
+
+
   // Submit button
   var submitBtn = document.createElement('button');
   submitBtn.innerText = 'Get Quote';

@@ -83,7 +83,7 @@ app.post('/submit-booking', (req, res) => {
       });
 
       const mailOptions = {
-        from: 'process.env.EMAIL_USER',   // Replace with your email
+        from: 'your-email@gmail.com',   // Replace with your email
         to: email,
         subject: 'Booking Confirmation',
         html: `
@@ -91,20 +91,24 @@ app.post('/submit-booking', (req, res) => {
           <p>Car Size: ${size}</p>
           <p>Condition: ${condition}</p>
           <p>Time: ${time}</p>
-          <p><a href="https://itsabzzz.github.io/insta-quote-tool/reschedule?bookingId=${bookingId}">Reschedule</a> | <a href="https://itsabzzz.github.io/insta-quote-tool/cancel?bookingId=${bookingId}">Cancel</a></p>
+          <p><a href="https://insta-quote-tool-production.up.railway.app/reschedule?bookingId=${bookingId}">Reschedule</a> | <a href="https://insta-quote-tool-production.up.railway.app/cancel?bookingId=${bookingId}">Cancel</a></p>
         `
       };
-
+      
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
+          console.error('Error sending email:', error);
           res.status(500).json({ message: 'Error sending email' });
         } else {
+          console.log('Email sent successfully:', info.response);
           res.status(200).json({ message: 'Booking submitted successfully!' });
         }
       });
+      
     }
   });
 });
+
 
 
 // GET route to fetch all bookings (for dashboard management)
@@ -174,22 +178,21 @@ app.get('/api/customer-bookings/:email', (req, res) => {
   });
 });
 
-// POST route to cancel a booking
+// POST route to handle canceling a booking
 app.post('/cancel', (req, res) => {
-  const { bookingId, reason } = req.body;
+  const { bookingId } = req.body;
 
   const sql = `DELETE FROM bookings WHERE id = ?`;
   db.run(sql, [bookingId], function(err) {
     if (err) {
       res.status(500).json({ message: 'Error canceling booking' });
     } else {
-      console.log(`Booking canceled. Reason: ${reason}`);
       res.status(200).json({ message: 'Booking canceled successfully!' });
     }
   });
 });
 
-// POST route to reschedule a booking
+// POST route to handle rescheduling a booking
 app.post('/reschedule', (req, res) => {
   const { bookingId, newTime } = req.body;
   
