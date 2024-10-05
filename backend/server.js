@@ -14,13 +14,7 @@ const db = new sqlite3.Database('./car_detailing.db', (err) => {
   }
 });
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER, // Secure with environment variable
-    pass: process.env.EMAIL_PASS  // Secure with environment variable
-  }
-});
+
 
 // Create tables if they don't exist
 db.serialize(() => {
@@ -28,7 +22,8 @@ db.serialize(() => {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     size TEXT,
     condition TEXT,
-    time TEXT
+    time TEXT,
+    customer_email TEXT   
   )`);
 
   db.run(`CREATE TABLE IF NOT EXISTS availability (
@@ -82,13 +77,13 @@ app.post('/submit-booking', (req, res) => {
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: 'your-email@gmail.com', // Replace with your email
-          pass: 'your-password'         // Replace with your email password
+          user: process.env.EMAIL_USER, // Should be set in Railway environment
+          pass: process.env.EMAIL_PASS  // Should be set in Railway environment
         }
       });
 
       const mailOptions = {
-        from: 'your-email@gmail.com',   // Replace with your email
+        from: 'process.env.EMAIL_USER',   // Replace with your email
         to: email,
         subject: 'Booking Confirmation',
         html: `
@@ -96,7 +91,7 @@ app.post('/submit-booking', (req, res) => {
           <p>Car Size: ${size}</p>
           <p>Condition: ${condition}</p>
           <p>Time: ${time}</p>
-          <p><a href="https://yourdomain.com/reschedule?bookingId=${bookingId}">Reschedule</a> | <a href="https://yourdomain.com/cancel?bookingId=${bookingId}">Cancel</a></p>
+          <p><a href="https://itsabzzz.github.io/insta-quote-tool/reschedule?bookingId=${bookingId}">Reschedule</a> | <a href="https://itsabzzz.github.io/insta-quote-tool/cancel?bookingId=${bookingId}">Cancel</a></p>
         `
       };
 
