@@ -54,10 +54,58 @@ function loadBookings() {
         row.insertCell(0).textContent = booking.size;
         row.insertCell(1).textContent = booking.condition;
         row.insertCell(2).textContent = booking.time;
+        
+        // Add Cancel button
+        const cancelBtn = document.createElement('button');
+        cancelBtn.innerText = 'Cancel';
+        cancelBtn.onclick = () => handleCancel(booking.id);
+        row.insertCell(3).appendChild(cancelBtn);
+
+        // Add Reschedule button
+        const rescheduleBtn = document.createElement('button');
+        rescheduleBtn.innerText = 'Reschedule';
+        rescheduleBtn.onclick = () => handleReschedule(booking.id);
+        row.insertCell(4).appendChild(rescheduleBtn);
       });
     })
     .catch(error => console.error('Error fetching bookings:', error));
 }
+
+// Handle booking cancellation
+function handleCancel(bookingId) {
+  if (confirm('Are you sure you want to cancel this booking?')) {
+    fetch('https://insta-quote-tool-production.up.railway.app/cancel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingId })
+    })
+    .then(response => response.json())
+    .then(data => {
+      alert(data.message);
+      loadBookings(); // Reload bookings after canceling
+    })
+    .catch(error => console.error('Error canceling booking:', error));
+  }
+}
+
+// Handle booking rescheduling
+function handleReschedule(bookingId) {
+  const newTime = prompt('Enter new time for the booking (e.g., 2024-10-15 14:00)');
+  if (newTime) {
+    fetch('https://insta-quote-tool-production.up.railway.app/reschedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingId, newTime })
+    })
+    .then(response => response.json())
+    .then(data => {
+      alert(data.message);
+      loadBookings(); // Reload bookings after rescheduling
+    })
+    .catch(error => console.error('Error rescheduling booking:', error));
+  }
+}
+
 
 // Handle availability form submission for a specific business
 document.getElementById('availability-form').addEventListener('submit', function(e) {
@@ -95,3 +143,23 @@ document.getElementById('pricing-form').addEventListener('submit', function(e) {
   .then(data => alert(data.message))
   .catch(error => console.error('Error updating pricing:', error));
 });
+
+
+// Handle business settings form submission
+document.getElementById('business-settings-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const businessId = localStorage.getItem('business_id');
+  const businessName = document.getElementById('business-name').value;
+  const serviceNames = document.getElementById('service-names').value.split(',');
+
+  fetch('https://insta-quote-tool-production.up.railway.app/api/update-business-settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ businessId, businessName, serviceNames })
+  })
+  .then(response => response.json())
+  .then(data => alert(data.message))
+  .catch(error => console.error('Error updating business settings:', error));
+});
+
