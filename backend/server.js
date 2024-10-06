@@ -120,6 +120,19 @@ app.get('/api/bookings', (req, res) => {
   });
 });
 
+// POST route to handle login
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  // Check if the email and password match the environment variables
+  if (email === process.env.EMAIL_USER && password === process.env.EMAIL_PASS) {
+    res.status(200).json({ business_id: 1 }); // Assuming a business ID of 1 for testing
+  } else {
+    res.status(401).json({ message: 'Invalid email or password' });
+  }
+});
+
+
 // POST route to update availability (for dashboard)
 app.post('/update-availability', (req, res) => {
   const { date, time, businessId } = req.body;
