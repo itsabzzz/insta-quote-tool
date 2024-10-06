@@ -120,27 +120,31 @@ app.get('/api/bookings', (req, res) => {
     if (err) {
       return res.status(500).json({ error: 'Error fetching bookings' });
     }
-    res.status(200).json(rows);  // Ensure an array of bookings is returned
+    res.status(200).json(rows);  // Ensure the response is an array
   });
 });
+
 
 
 
 // POST route to update pricing (for dashboard)
 app.post('/update-availability', (req, res) => {
   const { date, time, businessId } = req.body;
+
+  // Check if required fields are present
   if (!date || !time || !businessId) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
   const sql = `INSERT INTO availability (date, time, business_id) VALUES (?, ?, ?)`;
-  db.run(sql, [date, time, businessId], function (err) {
+  db.run(sql, [date, time, businessId], function(err) {
     if (err) {
       return res.status(500).json({ message: 'Error updating availability' });
     }
     res.status(200).json({ message: 'Availability updated successfully' });
   });
 });
+
 
 
 app.post('/api/update-pricing', (req, res) => {
