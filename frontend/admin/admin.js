@@ -10,30 +10,26 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       
       const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+  const password = document.getElementById('password').value;
 
-      if (!email || !password) {
-        alert('Please provide both email and password.');
-        return;
-      }
-
-      fetch('https://insta-quote-tool-production.up.railway.app/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.business_id) {
-          localStorage.setItem('business_id', data.business_id);
-          window.location.href = 'admin-dashboard.html';
-        } else {
-          throw new Error('Unexpected login response format');
-        }
-      })
-      .catch(error => {
-        console.error('Login error:', error);
-        alert('Invalid email or password.');
+  fetch('https://insta-quote-tool-production.up.railway.app/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Invalid email or password');
+    }
+    return response.json();
+  })
+  .then(data => {
+    localStorage.setItem('business_id', data.business_id);
+    window.location.href = 'admin-dashboard.html';
+  })
+  .catch(error => {
+    console.error('Login error:', error);
+    alert(error.message);
       });
     });
   }
