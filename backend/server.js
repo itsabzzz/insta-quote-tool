@@ -120,9 +120,10 @@ app.get('/api/bookings', (req, res) => {
     if (err) {
       return res.status(500).json({ error: 'Error fetching bookings' });
     }
-    res.status(200).json(rows);  // Ensure the response is an array
+    res.status(200).json(rows || []);  // Ensure the response is always an array
   });
 });
+
 
 
 
@@ -131,7 +132,6 @@ app.get('/api/bookings', (req, res) => {
 app.post('/update-availability', (req, res) => {
   const { date, time, businessId } = req.body;
 
-  // Check if required fields are present
   if (!date || !time || !businessId) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
@@ -144,6 +144,7 @@ app.post('/update-availability', (req, res) => {
     res.status(200).json({ message: 'Availability updated successfully' });
   });
 });
+
 
 
 
