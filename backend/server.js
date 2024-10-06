@@ -38,6 +38,12 @@ db.serialize(() => {
     business_id INTEGER
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS businesses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    services TEXT
+  )`);
+
   // Insert default pricing if none exists
   db.run(`INSERT OR IGNORE INTO pricing (service, price, business_id) VALUES 
     ('small', 50, 1), 
@@ -136,7 +142,6 @@ app.post('/login', (req, res) => {
 app.post('/api/update-business-settings', (req, res) => {
   const { businessId, businessName, serviceNames } = req.body;
 
-  // Ensure all required fields are provided
   if (!businessId || !businessName || !serviceNames) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
@@ -149,7 +154,6 @@ app.post('/api/update-business-settings', (req, res) => {
     res.status(200).json({ message: 'Business settings updated successfully' });
   });
 });
-
 
 // POST route to update availability (for dashboard)
 app.post('/update-availability', (req, res) => {
