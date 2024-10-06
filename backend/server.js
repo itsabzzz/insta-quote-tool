@@ -47,11 +47,12 @@ db.serialize(() => {
 app.use(express.json()); // To parse JSON bodies
 app.use(cors()); // Enable CORS to allow frontend and backend communication
 
-// POST route to handle quotes
+// Modify POST route to handle quotes with business_id
 app.post('/get-quote', (req, res) => {
-  const { size, condition } = req.body;
+  const { size, condition, businessId } = req.body;
   
-  db.get(`SELECT price FROM pricing WHERE service = ?`, [size], (err, row) => {
+  const sql = `SELECT price FROM pricing WHERE service = ? AND business_id = ?`;
+  db.get(sql, [size, businessId], (err, row) => {
     if (err) {
       res.status(500).json({ error: 'Error fetching price' });
     } else {
@@ -62,12 +63,12 @@ app.post('/get-quote', (req, res) => {
   });
 });
 
-
+// Modify POST route to submit bookings with business_id
 app.post('/submit-booking', (req, res) => {
-  const { size, condition, time, email } = req.body;
+  const { size, condition, time, email, businessId } = req.body;
   
-  const sql = `INSERT INTO bookings (size, condition, time, customer_email) VALUES (?, ?, ?, ?)`;
-  db.run(sql, [size, condition, time, email], function(err) {
+  const sql = `INSERT INTO bookings (size, condition, time, customer_email, business_id) VALUES (?, ?, ?, ?, ?)`;
+  db.run(sql, [size, condition, time, email, businessId], function(err) {
     if (err) {
       res.status(500).json({ message: 'Error saving booking' });
     } else {
@@ -111,10 +112,12 @@ app.post('/submit-booking', (req, res) => {
 
 
 
-// GET route to fetch all bookings (for dashboard management)
+// Get bookings based on business_id
 app.get('/api/bookings', (req, res) => {
-  const sql = `SELECT * FROM bookings`;
-  db.all(sql, [], (err, rows) => {
+  const { businessId } = req.query;
+  
+  const sql = `SELECT * FROM bookings WHERE business_id = ?`;
+  db.all(sql, [businessId], (err, rows) => {
     if (err) {
       res.status(500).json({ error: 'Error fetching bookings' });
     } else {
