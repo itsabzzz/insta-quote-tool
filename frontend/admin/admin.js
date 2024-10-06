@@ -41,9 +41,70 @@ document.getElementById('login-form').addEventListener('submit', function(e) {
 
 
 
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Add event listener for login form
+  document.getElementById('business-settings-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+  
+    const businessId = localStorage.getItem('business_id');
+    const businessName = document.getElementById('business-name').value;
+    const serviceNames = document.getElementById('service-names').value.split(',');
+
+    fetch('https://insta-quote-tool-production.up.railway.app/api/update-business-settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ businessId, businessName, serviceNames })
+    })
+    .then(response => response.json())
+    .then(data => alert(data.message))
+    .catch(error => console.error('Error updating business settings:', error));
+  });
+
+  // Add event listener for pricing form
+  document.getElementById('pricing-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const businessId = localStorage.getItem('business_id');
+    const smallPrice = document.getElementById('small-price').value;
+    const mediumPrice = document.getElementById('medium-price').value;
+    const largePrice = document.getElementById('large-price').value;
+
+    fetch('https://insta-quote-tool-production.up.railway.app/api/update-pricing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ smallPrice, mediumPrice, largePrice, businessId })
+    })
+    .then(response => response.json())
+    .then(data => alert(data.message))
+    .catch(error => console.error('Error updating pricing:', error));
+  });
+
+  // Add event listener for availability form
+  document.getElementById('availability-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const businessId = localStorage.getItem('business_id');
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+
+    fetch('https://insta-quote-tool-production.up.railway.app/update-availability', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date, time, businessId })
+    })
+    .then(response => response.json())
+    .then(data => alert(data.message))
+    .catch(error => console.error('Error updating availability:', error));
+  });
+
+  // Add event listener to load bookings
+  loadBookings();
+});
+
 // Load bookings from the backend for a specific business
 function loadBookings() {
-  const businessId = localStorage.getItem('business_id');  // Retrieve the stored business_id
+  const businessId = localStorage.getItem('business_id');
   fetch(`https://insta-quote-tool-production.up.railway.app/api/bookings?businessId=${businessId}`)
     .then(response => response.json())
     .then(data => {
@@ -71,7 +132,6 @@ function loadBookings() {
     .catch(error => console.error('Error fetching bookings:', error));
 }
 
-// Handle booking cancellation
 function handleCancel(bookingId) {
   if (confirm('Are you sure you want to cancel this booking?')) {
     fetch('https://insta-quote-tool-production.up.railway.app/cancel', {
@@ -88,7 +148,6 @@ function handleCancel(bookingId) {
   }
 }
 
-// Handle booking rescheduling
 function handleReschedule(bookingId) {
   const newTime = prompt('Enter new time for the booking (e.g., 2024-10-15 14:00)');
   if (newTime) {
@@ -105,63 +164,3 @@ function handleReschedule(bookingId) {
     .catch(error => console.error('Error rescheduling booking:', error));
   }
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-
-// Handle availability form submission for a specific business
-document.getElementById('availability-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  
-  const businessId = localStorage.getItem('business_id');  // Retrieve business ID
-  const date = document.getElementById('date').value;
-  const time = document.getElementById('time').value;
-  
-  fetch('https://insta-quote-tool-production.up.railway.app/update-availability', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ date, time, businessId })  // Send businessId
-  })
-  .then(response => response.json())
-  .then(data => alert(data.message))
-  .catch(error => console.error('Error updating availability:', error));
-});
-
-// Handle pricing form submission for a specific business
-document.getElementById('pricing-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  
-  const businessId = localStorage.getItem('business_id');  // Retrieve business ID
-  const smallPrice = document.getElementById('small-price').value;
-  const mediumPrice = document.getElementById('medium-price').value;
-  const largePrice = document.getElementById('large-price').value;
-
-  fetch('https://insta-quote-tool-production.up.railway.app/api/update-pricing', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ smallPrice, mediumPrice, largePrice, businessId })  // Send businessId
-  })
-  .then(response => response.json())
-  .then(data => alert(data.message))
-  .catch(error => console.error('Error updating pricing:', error));
-});
-
-
-// Handle business settings form submission
-document.getElementById('business-settings-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  
-  const businessId = localStorage.getItem('business_id');
-  const businessName = document.getElementById('business-name').value;
-  const serviceNames = document.getElementById('service-names').value.split(',');
-
-  fetch('https://insta-quote-tool-production.up.railway.app/api/update-business-settings', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ businessId, businessName, serviceNames })
-  })
-  .then(response => response.json())
-  .then(data => alert(data.message))
-  .catch(error => console.error('Error updating business settings:', error));
-});
-});
-
