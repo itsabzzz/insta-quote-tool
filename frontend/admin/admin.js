@@ -12,40 +12,34 @@ document.getElementById('login-form').addEventListener('submit', function(e) {
     body: JSON.stringify({ email, password })
   })
   .then(response => {
-    // Check for 401 Unauthorized explicitly and handle that case
+    console.log('Response status:', response.status);
+    
     if (response.status === 401) {
       throw new Error('Invalid login');
+    } else if (response.status !== 200) {
+      throw new Error('Unexpected response status: ' + response.status);
     }
-    // Otherwise, return the JSON response
+
     return response.json();
   })
   .then(data => {
+    console.log('Login data received:', data);
+    
     if (data.business_id) {
+      console.log('Successful login for business ID:', data.business_id);
       localStorage.setItem('business_id', data.business_id);  // Store business_id for future requests
       window.location.href = 'admin-dashboard.html'; // Redirect to dashboard
     } else {
-      throw new Error('Invalid login');  // In case of an unexpected response format
+      throw new Error('Unexpected login response format');
     }
   })
   .catch(error => {
-    alert(error.message);  // Only show "Invalid login" on actual errors
+    console.error('Login error:', error);
+    alert(error.message);  // Only show the invalid login message on actual errors
   });
 });
 
 
-
-document.getElementById('login-btn').addEventListener('click', function() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-
-  if (email === 'owner@business.com' && password === 'password123') {
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-    loadBookings();
-  } else {
-    alert('Invalid login');
-  }
-});
 
 // Load bookings from the backend for a specific business
 function loadBookings() {
