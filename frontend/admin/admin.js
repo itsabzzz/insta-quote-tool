@@ -19,44 +19,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
   // Ensure the form exists before adding the event listener
-  if (loginForm) {
-    loginForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+// Handle login form submission
+if (loginForm) {
+  loginForm.addEventListener('submit', function(e) {
+    e.preventDefault();
 
-      fetch('https://insta-quote-tool-production.up.railway.app/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password })
-      })
-      .then(response => {
-        console.log('Response status:', response.status);
-        
-        if (response.status === 401) {
-          throw new Error('Invalid login');
-        } else if (response.status !== 200) {
-          throw new Error('Unexpected response status: ' + response.status);
-        }
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-        return response.json();
-      })
-      .then(data => {
-        if (data.business_id) {
-          localStorage.setItem('business_id', data.business_id);
-          window.location.href = 'admin-dashboard.html';
-        } else {
-          throw new Error('Unexpected login response format');
-        }
-      })
-      .catch(error => {
-        alert(error.message);
-      });
+    fetch('https://insta-quote-tool-production.up.railway.app/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.business_id) {
+        localStorage.setItem('business_id', data.business_id);  // Store business_id in localStorage
+        window.location.href = 'admin-dashboard.html';  // Redirect to dashboard
+      } else {
+        throw new Error('Invalid login');
+      }
+    })
+    .catch(error => {
+      console.error('Login error:', error);
+      alert(error.message);
     });
-  }
+  });
+}
+
 
   // Add event listener for business settings form
   if (businessSettingsForm) {
@@ -101,11 +94,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Add event listener for availability form
 // Add event listener for availability form
+// Add event listener for availability form
 if (availabilityForm) {
   availabilityForm.addEventListener('submit', function(e) {
     e.preventDefault();
 
-    // Retrieve business ID, date, and time
     const businessId = localStorage.getItem('business_id');
     const date = document.getElementById('date').value;
     const time = document.getElementById('time').value;
