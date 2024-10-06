@@ -11,17 +11,25 @@ document.getElementById('login-form').addEventListener('submit', function(e) {
     },
     body: JSON.stringify({ email, password })
   })
-  .then(response => response.json())
+  .then(response => {
+    // Check if the response status is 200 (OK)
+    if (response.status === 200) {
+      return response.json();
+    } else {
+      throw new Error('Invalid login');
+    }
+  })
   .then(data => {
     if (data.business_id) {
       localStorage.setItem('business_id', data.business_id);  // Store business_id for future requests
       window.location.href = 'admin-dashboard.html'; // Redirect to dashboard
-    } else {
-      alert('Invalid login credentials');
     }
   })
-  .catch(error => console.error('Error:', error));
+  .catch(error => {
+    alert('Invalid login credentials');  // Display only when the login fails
+  });
 });
+
 
 
 document.getElementById('login-btn').addEventListener('click', function() {
