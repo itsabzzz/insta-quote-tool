@@ -279,16 +279,10 @@ db.serialize(() => {
 // POST route to handle login
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
-  
-  const sql = `SELECT business_id FROM owners WHERE email = ? AND password = ?`;
-  db.get(sql, [email, password], (err, row) => {
-    if (err) {
-      res.status(500).json({ error: 'Error during login' });
-    } else if (row) {
-      // Return the business_id if login is successful
-      res.status(200).json({ business_id: row.business_id });
-    } else {
-      res.status(401).json({ message: 'Invalid email or password' });
-    }
-  });
+  if (email === process.env.EMAIL_USER && password === process.env.EMAIL_PASS) {
+    res.status(200).json({ business_id: 1 }); // Example business ID
+  } else {
+    res.status(401).json({ message: 'Invalid email or password' });
+  }
 });
+
