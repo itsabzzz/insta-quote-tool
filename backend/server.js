@@ -132,6 +132,24 @@ app.post('/login', (req, res) => {
   }
 });
 
+// POST route to handle updating business settings
+app.post('/api/update-business-settings', (req, res) => {
+  const { businessId, businessName, serviceNames } = req.body;
+
+  // Ensure all required fields are provided
+  if (!businessId || !businessName || !serviceNames) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  const updateBusiness = `UPDATE businesses SET name = ?, services = ? WHERE id = ?`;
+  db.run(updateBusiness, [businessName, serviceNames.join(', '), businessId], function(err) {
+    if (err) {
+      return res.status(500).json({ message: 'Error updating business settings' });
+    }
+    res.status(200).json({ message: 'Business settings updated successfully' });
+  });
+});
+
 
 // POST route to update availability (for dashboard)
 app.post('/update-availability', (req, res) => {

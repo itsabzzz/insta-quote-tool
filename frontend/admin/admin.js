@@ -34,6 +34,36 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // Add event listener for business settings form
+document.getElementById('business-settings-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const businessId = localStorage.getItem('business_id');
+  const businessName = document.getElementById('business-name').value;
+  const serviceNames = document.getElementById('service-names').value.split(',');
+
+  // Ensure all fields are filled
+  if (!businessName || !serviceNames || !businessId) {
+    alert('Please fill in all fields.');
+    return;
+  }
+
+  fetch('https://insta-quote-tool-production.up.railway.app/api/update-business-settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ businessId, businessName, serviceNames })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Error updating business settings');
+    }
+    return response.json();
+  })
+  .then(data => alert(data.message))
+  .catch(error => console.error('Error updating business settings:', error));
+});
+
+
   // Event listener for availability form
   if (availabilityForm) {
     availabilityForm.addEventListener('submit', function(e) {
