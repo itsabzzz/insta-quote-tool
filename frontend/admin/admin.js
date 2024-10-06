@@ -1,3 +1,28 @@
+document.getElementById('login-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  fetch('https://insta-quote-tool-production.up.railway.app/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.business_id) {
+      localStorage.setItem('business_id', data.business_id);  // Store business_id for future requests
+      window.location.href = 'admin.html'; // Redirect to dashboard
+    } else {
+      alert('Invalid login credentials');
+    }
+  })
+  .catch(error => console.error('Error:', error));
+});
+
 document.getElementById('login-btn').addEventListener('click', function() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -11,9 +36,10 @@ document.getElementById('login-btn').addEventListener('click', function() {
   }
 });
 
-// Load bookings from the backend
+// Load bookings from the backend for a specific business
 function loadBookings() {
-  fetch('https://insta-quote-tool-production.up.railway.app/api/bookings')
+  const businessId = localStorage.getItem('business_id');  // Retrieve the stored business_id
+  fetch(`https://insta-quote-tool-production.up.railway.app/api/bookings?businessId=${businessId}`)
     .then(response => response.json())
     .then(data => {
       const bookingsTable = document.getElementById('bookings-table');
@@ -28,27 +54,29 @@ function loadBookings() {
     .catch(error => console.error('Error fetching bookings:', error));
 }
 
-// Handle availability form submission
+// Handle availability form submission for a specific business
 document.getElementById('availability-form').addEventListener('submit', function(e) {
   e.preventDefault();
   
+  const businessId = localStorage.getItem('business_id');  // Retrieve business ID
   const date = document.getElementById('date').value;
   const time = document.getElementById('time').value;
   
   fetch('https://insta-quote-tool-production.up.railway.app/update-availability', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ date, time })
+    body: JSON.stringify({ date, time, businessId })  // Send businessId
   })
   .then(response => response.json())
   .then(data => alert(data.message))
   .catch(error => console.error('Error updating availability:', error));
 });
 
-// Handle pricing form submission
+// Handle pricing form submission for a specific business
 document.getElementById('pricing-form').addEventListener('submit', function(e) {
   e.preventDefault();
-
+  
+  const businessId = localStorage.getItem('business_id');  // Retrieve business ID
   const smallPrice = document.getElementById('small-price').value;
   const mediumPrice = document.getElementById('medium-price').value;
   const largePrice = document.getElementById('large-price').value;
@@ -56,7 +84,7 @@ document.getElementById('pricing-form').addEventListener('submit', function(e) {
   fetch('https://insta-quote-tool-production.up.railway.app/api/update-pricing', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ smallPrice, mediumPrice, largePrice })
+    body: JSON.stringify({ smallPrice, mediumPrice, largePrice, businessId })  // Send businessId
   })
   .then(response => response.json())
   .then(data => alert(data.message))
