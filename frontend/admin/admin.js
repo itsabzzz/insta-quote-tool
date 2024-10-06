@@ -15,13 +15,14 @@ document.getElementById('login-form').addEventListener('submit', function(e) {
   .then(data => {
     if (data.business_id) {
       localStorage.setItem('business_id', data.business_id);  // Store business_id for future requests
-      window.location.href = 'admin.html'; // Redirect to dashboard
+      window.location.href = 'admin-dashboard.html'; // Redirect to dashboard
     } else {
       alert('Invalid login credentials');
     }
   })
   .catch(error => console.error('Error:', error));
 });
+
 
 document.getElementById('login-btn').addEventListener('click', function() {
   const email = document.getElementById('email').value;
