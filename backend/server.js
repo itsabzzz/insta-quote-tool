@@ -115,14 +115,22 @@ app.post('/submit-booking', (req, res) => {
 // Get bookings based on business_id
 app.get('/api/bookings', (req, res) => {
   const businessId = req.query.businessId;
+
+  // Check if businessId is provided
+  if (!businessId) {
+    return res.status(400).json({ error: 'Missing business ID' });
+  }
+
   const sql = `SELECT * FROM bookings WHERE business_id = ?`;
   db.all(sql, [businessId], (err, rows) => {
     if (err) {
+      console.error('Error fetching bookings:', err);
       return res.status(500).json({ error: 'Error fetching bookings' });
     }
-    res.status(200).json(rows || []);  // Ensure the response is always an array
+    res.status(200).json(rows || []); // Ensure rows is always an array
   });
 });
+
 
 
 
@@ -132,6 +140,7 @@ app.get('/api/bookings', (req, res) => {
 app.post('/update-availability', (req, res) => {
   const { date, time, businessId } = req.body;
 
+  // Check if required fields are present
   if (!date || !time || !businessId) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
@@ -139,11 +148,13 @@ app.post('/update-availability', (req, res) => {
   const sql = `INSERT INTO availability (date, time, business_id) VALUES (?, ?, ?)`;
   db.run(sql, [date, time, businessId], function(err) {
     if (err) {
+      console.error('Error updating availability:', err);  // Log the exact error
       return res.status(500).json({ message: 'Error updating availability' });
     }
     res.status(200).json({ message: 'Availability updated successfully' });
   });
 });
+
 
 
 
