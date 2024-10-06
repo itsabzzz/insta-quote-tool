@@ -100,24 +100,39 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Add event listener for availability form
-  if (availabilityForm) {
-    availabilityForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const businessId = localStorage.getItem('business_id');
-      const date = document.getElementById('date').value;
-      const time = document.getElementById('time').value;
+// Add event listener for availability form
+if (availabilityForm) {
+  availabilityForm.addEventListener('submit', function(e) {
+    e.preventDefault();
 
-      fetch('https://insta-quote-tool-production.up.railway.app/update-availability', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, time, businessId })
-      })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error updating availability:', error));
-    });
-  }
+    // Retrieve business ID, date, and time
+    const businessId = localStorage.getItem('business_id');
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+
+    // Check if all fields are filled
+    if (!businessId || !date || !time) {
+      alert('Please fill in all fields.');
+      return;
+    }
+
+    // Send data to backend
+    fetch('https://insta-quote-tool-production.up.railway.app/update-availability', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date, time, businessId })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Error updating availability');
+      }
+      return response.json();
+    })
+    .then(data => alert(data.message))
+    .catch(error => console.error('Error updating availability:', error));
+  });
+}
+
 
   // Load bookings
   loadBookings();
