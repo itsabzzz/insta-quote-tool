@@ -12,21 +12,23 @@ document.getElementById('login-form').addEventListener('submit', function(e) {
     body: JSON.stringify({ email, password })
   })
   .then(response => {
-    // Check if the response status is 200 (OK)
-    if (response.status === 200) {
-      return response.json();
-    } else {
+    // Check for 401 Unauthorized explicitly and handle that case
+    if (response.status === 401) {
       throw new Error('Invalid login');
     }
+    // Otherwise, return the JSON response
+    return response.json();
   })
   .then(data => {
     if (data.business_id) {
       localStorage.setItem('business_id', data.business_id);  // Store business_id for future requests
       window.location.href = 'admin-dashboard.html'; // Redirect to dashboard
+    } else {
+      throw new Error('Invalid login');  // In case of an unexpected response format
     }
   })
   .catch(error => {
-    alert('Invalid login credentials');  // Display only when the login fails
+    alert(error.message);  // Only show "Invalid login" on actual errors
   });
 });
 
