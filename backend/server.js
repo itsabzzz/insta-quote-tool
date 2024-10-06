@@ -286,3 +286,17 @@ app.post('/login', (req, res) => {
   }
 });
 
+app.post('/api/update-business-settings', (req, res) => {
+  const { businessId, businessName, serviceNames } = req.body;
+
+  // Update business settings in the database
+  const updateBusiness = `UPDATE businesses SET name = ?, services = ? WHERE id = ?`;
+  db.run(updateBusiness, [businessName, serviceNames.join(', '), businessId], function(err) {
+    if (err) {
+      res.status(500).json({ message: 'Error updating business settings' });
+    } else {
+      res.status(200).json({ message: 'Business settings updated successfully' });
+    }
+  });
+});
+
