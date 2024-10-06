@@ -114,8 +114,8 @@ app.post('/submit-booking', (req, res) => {
 
 // Get bookings based on business_id
 app.get('/api/bookings', (req, res) => {
-  const { businessId } = req.query;
-  
+  const businessId = req.query.businessId;
+
   const sql = `SELECT * FROM bookings WHERE business_id = ?`;
   db.all(sql, [businessId], (err, rows) => {
     if (err) {
@@ -126,33 +126,13 @@ app.get('/api/bookings', (req, res) => {
   });
 });
 
+
 // POST route to update pricing (for dashboard)
-app.post('/api/update-pricing', (req, res) => {
-  const { smallPrice, mediumPrice, largePrice } = req.body;
-
-  const updateSmall = `UPDATE pricing SET price = ? WHERE service = 'small'`;
-  const updateMedium = `UPDATE pricing SET price = ? WHERE service = 'medium'`;
-  const updateLarge = `UPDATE pricing SET price = ? WHERE service = 'large'`;
-
-  db.run(updateSmall, [smallPrice], (err) => {
-    if (err) return res.status(500).json({ message: 'Error updating small price' });
-  });
-  db.run(updateMedium, [mediumPrice], (err) => {
-    if (err) return res.status(500).json({ message: 'Error updating medium price' });
-  });
-  db.run(updateLarge, [largePrice], (err) => {
-    if (err) return res.status(500).json({ message: 'Error updating large price' });
-
-    res.status(200).json({ message: 'Pricing updated successfully' });
-  });
-});
-
-// POST route to update availability
 app.post('/update-availability', (req, res) => {
-  const { date, time } = req.body;
+  const { date, time, businessId } = req.body;
+  const sql = `INSERT INTO availability (date, time, business_id) VALUES (?, ?, ?)`;
 
-  const sql = `INSERT INTO availability (date, time) VALUES (?, ?)`;
-  db.run(sql, [date, time], function(err) {
+  db.run(sql, [date, time, businessId], function(err) {
     if (err) {
       res.status(500).json({ message: 'Error updating availability' });
     } else {
@@ -160,6 +140,27 @@ app.post('/update-availability', (req, res) => {
     }
   });
 });
+
+app.post('/api/update-pricing', (req, res) => {
+  const { smallPrice, mediumPrice, largePrice, businessId } = req.body;
+
+  const updateSmall = `UPDATE pricing SET price = ? WHERE service = 'small' AND business_id = ?`;
+  const updateMedium = `UPDATE pricing SET price = ? WHERE service = 'medium' AND business_id = ?`;
+  const updateLarge = `UPDATE pricing SET price = ? WHERE service = 'large' AND business_id = ?`;
+
+  db.run(updateSmall, [smallPrice, businessId], (err) => {
+    if (err) return res.status(500).json({ message: 'Error updating small price' });
+  });
+  db.run(updateMedium, [mediumPrice, businessId], (err) => {
+    if (err) return res.status(500).json({ message: 'Error updating medium price' });
+  });
+  db.run(updateLarge, [largePrice, businessId], (err) => {
+    if (err) return res.status(500).json({ message: 'Error updating large price' });
+
+    res.status(200).json({ message: 'Pricing updated successfully' });
+  });
+});
+
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
@@ -261,6 +262,33 @@ app.post('/confirm-reschedule', (req, res) => {
       res.status(500).json({ message: 'Error rescheduling booking' });
     } else {
       res.status(200).json({ message: 'Booking rescheduled successfully!' });
+    }
+  });
+});
+
+// Create an owners table to store business credentials
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS owners (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    business_id INTEGER,
+    email TEXT,
+    password TEXT -- In the future, you should hash passwords
+  )`);
+});
+
+// POST route to handle login
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  const sql = `SELECT business_id FROM owners WHERE email = ? AND password = ?`;
+  db.get(sql, [email, password], (err, row) => {
+    if (err) {
+      res.status(500).json({ error: 'Error during login' });
+    } else if (row) {
+      // Return the business_id if login is successful
+      res.status(200).json({ business_id: row.business_id });
+    } else {
+      res.status(401).json({ message: 'Invalid email or password' });
     }
   });
 });
