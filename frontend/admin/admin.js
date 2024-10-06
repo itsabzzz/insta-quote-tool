@@ -4,6 +4,19 @@ document.addEventListener('DOMContentLoaded', function() {
   const businessSettingsForm = document.getElementById('business-settings-form');
   const pricingForm = document.getElementById('pricing-form');
   const availabilityForm = document.getElementById('availability-form');
+  const date = document.getElementById('date').value;
+  const time = document.getElementById('time').value;
+  const businessId = localStorage.getItem('business_id');
+
+  fetch('https://insta-quote-tool-production.up.railway.app/update-availability', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ date, time, businessId })
+  })
+  .then(response => response.json())
+  .then(data => alert(data.message))
+  .catch(error => console.error('Error updating availability:', error));
+
 
   // Ensure the form exists before adding the event listener
   if (loginForm) {

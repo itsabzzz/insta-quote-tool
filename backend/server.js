@@ -115,31 +115,33 @@ app.post('/submit-booking', (req, res) => {
 // Get bookings based on business_id
 app.get('/api/bookings', (req, res) => {
   const businessId = req.query.businessId;
-
   const sql = `SELECT * FROM bookings WHERE business_id = ?`;
   db.all(sql, [businessId], (err, rows) => {
     if (err) {
-      res.status(500).json({ error: 'Error fetching bookings' });
-    } else {
-      res.status(200).json(rows);
+      return res.status(500).json({ error: 'Error fetching bookings' });
     }
+    res.status(200).json(rows);  // Ensure an array of bookings is returned
   });
 });
+
 
 
 // POST route to update pricing (for dashboard)
 app.post('/update-availability', (req, res) => {
   const { date, time, businessId } = req.body;
-  const sql = `INSERT INTO availability (date, time, business_id) VALUES (?, ?, ?)`;
+  if (!date || !time || !businessId) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
 
-  db.run(sql, [date, time, businessId], function(err) {
+  const sql = `INSERT INTO availability (date, time, business_id) VALUES (?, ?, ?)`;
+  db.run(sql, [date, time, businessId], function (err) {
     if (err) {
-      res.status(500).json({ message: 'Error updating availability' });
-    } else {
-      res.status(200).json({ message: 'Availability updated successfully' });
+      return res.status(500).json({ message: 'Error updating availability' });
     }
+    res.status(200).json({ message: 'Availability updated successfully' });
   });
 });
+
 
 app.post('/api/update-pricing', (req, res) => {
   const { smallPrice, mediumPrice, largePrice, businessId } = req.body;
