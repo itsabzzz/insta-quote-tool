@@ -264,6 +264,32 @@ app.post('/confirm-cancel', (req, res) => {
   });
 });
 
+
+// Add this code inside the /submit-booking route after sending the confirmation email
+const ownerEmail = 'owner@example.com'; // Replace with the business owner's email
+
+const ownerMailOptions = {
+    from: 'your-email@gmail.com', 
+    to: ownerEmail,
+    subject: 'New Booking Notification',
+    html: `
+        <h1>New Booking Received</h1>
+        <p>Car Size: ${size}</p>
+        <p>Condition: ${condition}</p>
+        <p>Time: ${time}</p>
+        <p>Customer Email: ${email}</p>
+    `
+};
+
+transporter.sendMail(ownerMailOptions, (error, info) => {
+    if (error) {
+        console.error('Error sending owner email:', error);
+    } else {
+        console.log('Owner notification sent:', info.response);
+    }
+});
+
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
