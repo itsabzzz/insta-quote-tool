@@ -10,59 +10,55 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       
       const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+      const password = document.getElementById('password').value;
 
-  fetch('https://insta-quote-tool-production.up.railway.app/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Invalid email or password');
-    }
-    return response.json();
-  })
-  .then(data => {
-    localStorage.setItem('business_id', data.business_id);
-    window.location.href = 'admin-dashboard.html';
-  })
-  .catch(error => {
-    console.error('Login error:', error);
-    alert(error.message);
+      fetch('https://insta-quote-tool-production.up.railway.app/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Invalid email or password');
+        return response.json();
+      })
+      .then(data => {
+        localStorage.setItem('business_id', data.business_id);
+        window.location.href = 'admin-dashboard.html';
+      })
+      .catch(error => {
+        console.error('Login error:', error);
+        alert(error.message);
       });
     });
   }
 
-  // Add event listener for business settings form
-document.getElementById('business-settings-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  
-  const businessId = localStorage.getItem('business_id');
-  const businessName = document.getElementById('business-name').value;
-  const serviceNames = document.getElementById('service-names').value.split(',');
+  // Event listener for business settings form
+  if (businessSettingsForm) {
+    businessSettingsForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const businessId = localStorage.getItem('business_id');
+      const businessName = document.getElementById('business-name').value;
+      const serviceNames = document.getElementById('service-names').value.split(',');
 
-  // Ensure all fields are filled
-  if (!businessName || !serviceNames || !businessId) {
-    alert('Please fill in all fields.');
-    return;
+      if (!businessName || !serviceNames || !businessId) {
+        alert('Please fill in all fields.');
+        return;
+      }
+
+      fetch('https://insta-quote-tool-production.up.railway.app/api/update-business-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ businessId, businessName, serviceNames })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Error updating business settings');
+        return response.json();
+      })
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error updating business settings:', error));
+    });
   }
-
-  fetch('https://insta-quote-tool-production.up.railway.app/api/update-business-settings', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ businessId, businessName, serviceNames })
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Error updating business settings');
-    }
-    return response.json();
-  })
-  .then(data => alert(data.message))
-  .catch(error => console.error('Error updating business settings:', error));
-});
-
 
   // Event listener for availability form
   if (availabilityForm) {
@@ -84,16 +80,11 @@ document.getElementById('business-settings-form').addEventListener('submit', fun
         body: JSON.stringify({ date, time, businessId })
       })
       .then(response => {
-        if (!response.ok) {
-          throw new Error('Error updating availability');
-        }
+        if (!response.ok) throw new Error('Error updating availability');
         return response.json();
       })
       .then(data => alert(data.message))
-      .catch(error => {
-        console.error('Error updating availability:', error);
-        alert('Error updating availability');
-      });
+      .catch(error => console.error('Error updating availability:', error));
     });
   }
 
@@ -118,20 +109,15 @@ document.getElementById('business-settings-form').addEventListener('submit', fun
         body: JSON.stringify({ smallPrice, mediumPrice, largePrice, businessId })
       })
       .then(response => {
-        if (!response.ok) {
-          throw new Error('Error updating pricing');
-        }
+        if (!response.ok) throw new Error('Error updating pricing');
         return response.json();
       })
       .then(data => alert(data.message))
-      .catch(error => {
-        console.error('Error updating pricing:', error);
-        alert('Error updating pricing');
-      });
+      .catch(error => console.error('Error updating pricing:', error));
     });
   }
 
-  // Load bookings for the specific business
+  // Load bookings
   loadBookings();
 });
 
@@ -145,16 +131,12 @@ function loadBookings() {
 
   fetch(`https://insta-quote-tool-production.up.railway.app/api/bookings?businessId=${businessId}`)
     .then(response => {
-      if (!response.ok) {
-        throw new Error('Error fetching bookings');
-      }
+      if (!response.ok) throw new Error('Error fetching bookings');
       return response.json();
     })
     .then(data => {
-      if (!Array.isArray(data)) {
-        throw new Error('Invalid data format: Expected an array');
-      }
-
+      if (!Array.isArray(data)) throw new Error('Invalid data format');
+      
       const bookingsTable = document.getElementById('bookings-table');
       bookingsTable.innerHTML = ''; // Clear previous bookings
 
@@ -177,10 +159,7 @@ function loadBookings() {
         row.insertCell(4).appendChild(rescheduleBtn);
       });
     })
-    .catch(error => {
-      console.error('Error fetching bookings:', error);
-      alert('Error fetching bookings');
-    });
+    .catch(error => console.error('Error fetching bookings:', error));
 }
 
 // Cancel booking
@@ -192,19 +171,14 @@ function handleCancel(bookingId) {
       body: JSON.stringify({ bookingId })
     })
     .then(response => {
-      if (!response.ok) {
-        throw new Error('Error canceling booking');
-      }
+      if (!response.ok) throw new Error('Error canceling booking');
       return response.json();
     })
     .then(data => {
       alert(data.message);
-      loadBookings(); // Reload bookings after canceling
+      loadBookings();
     })
-    .catch(error => {
-      console.error('Error canceling booking:', error);
-      alert('Error canceling booking');
-    });
+    .catch(error => console.error('Error canceling booking:', error));
   }
 }
 
@@ -218,18 +192,13 @@ function handleReschedule(bookingId) {
       body: JSON.stringify({ bookingId, newTime })
     })
     .then(response => {
-      if (!response.ok) {
-        throw new Error('Error rescheduling booking');
-      }
+      if (!response.ok) throw new Error('Error rescheduling booking');
       return response.json();
     })
     .then(data => {
       alert(data.message);
-      loadBookings(); // Reload bookings after rescheduling
+      loadBookings();
     })
-    .catch(error => {
-      console.error('Error rescheduling booking:', error);
-      alert('Error rescheduling booking');
-    });
+    .catch(error => console.error('Error rescheduling booking:', error));
   }
 }
