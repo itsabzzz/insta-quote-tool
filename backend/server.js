@@ -14,6 +14,16 @@ const db = new sqlite3.Database('./car_detailing.db', (err) => {
   }
 });
 
+const corsOptions = {
+  origin: 'https://itsabzzz.github.io', // Replace this with your GitHub Pages URL
+  methods: 'GET,POST,PUT,DELETE',
+  allowedHeaders: 'Content-Type',
+  credentials: true
+};
+
+app.use(cors(corsOptions));
+app.use(express.json()); // To parse JSON bodies
+
 // Create tables if they don't exist, including business_id column
 db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS bookings (
