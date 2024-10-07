@@ -14,14 +14,18 @@ const db = new sqlite3.Database('./car_detailing.db', (err) => {
   }
 });
 
+// Update your CORS configuration in server.js
 const corsOptions = {
-  origin: 'https://itsabzzz.github.io', // Replace this with your GitHub Pages URL
-  methods: 'GET,POST,PUT,DELETE',
-  allowedHeaders: 'Content-Type',
+  origin: 'https://itsabzzz.github.io', // Your GitHub Pages URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 };
 
 app.use(cors(corsOptions));
+
+
+
 app.use(express.json()); // To parse JSON bodies
 
 // Create tables if they don't exist, including business_id column
@@ -100,19 +104,18 @@ app.post('/submit-booking', (req, res) => {
         }
       });
 
-      const mailOptions = {
-        from: 'your-email@gmail.com',
-        to: email,
-        subject: 'Booking Confirmation',
-        html: `
-          <h1>Booking Confirmation</h1>
-          <p>Car Size: ${size}</p>
-          <p>Condition: ${condition}</p>
-          <p>Time: ${time}</p>
-          <p><a href="https://insta-quote-tool-production.up.railway.app/reschedule?bookingId=${bookingId}">Reschedule</a> | 
-          <a href="https://insta-quote-tool-production.up.railway.app/cancel?bookingId=${bookingId}">Cancel</a></p>
-        `
-      };   
+const mailOptions = {
+  from: 'your-email@gmail.com',
+  to: email,
+  subject: 'Booking Confirmation',
+  html: `
+    <h1>Booking Confirmation</h1>
+    <p>Car Size: ${size}</p>
+    <p>Condition: ${condition}</p>
+    <p>Time: ${time}</p>
+    <p><a href="https://insta-quote-tool-production.up.railway.app/reschedule?bookingId=${bookingId}">Reschedule</a> | <a href="https://insta-quote-tool-production.up.railway.app/cancel?bookingId=${bookingId}">Cancel</a></p>
+  `
+};
       
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
