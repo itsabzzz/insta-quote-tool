@@ -311,13 +311,7 @@ app.post('/confirm-cancel', (req, res) => {
 
 
 
-transporter.sendMail(ownerMailOptions, (error, info) => {
-    if (error) {
-        console.error('Error sending owner email:', error);
-    } else {
-        console.log('Owner notification sent:', info.response);
-    }
-});
+
 
 
 app.listen(port, () => {
