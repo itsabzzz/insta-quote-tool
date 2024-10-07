@@ -91,7 +91,7 @@ app.post('/submit-booking', (req, res) => {
       });
 
       const mailOptions = {
-        from: 'your-email@gmail.com',  
+        from: 'your-email@gmail.com',
         to: email,
         subject: 'Booking Confirmation',
         html: `
@@ -99,9 +99,10 @@ app.post('/submit-booking', (req, res) => {
           <p>Car Size: ${size}</p>
           <p>Condition: ${condition}</p>
           <p>Time: ${time}</p>
-          <p><a href="https://insta-quote-tool-production.up.railway.app/reschedule?bookingId=${bookingId}">Reschedule</a> | <a href="https://insta-quote-tool-production.up.railway.app/cancel?bookingId=${bookingId}">Cancel</a></p>
+          <p><a href="https://insta-quote-tool-production.up.railway.app/reschedule?bookingId=${bookingId}">Reschedule</a> | 
+          <a href="https://insta-quote-tool-production.up.railway.app/cancel?bookingId=${bookingId}">Cancel</a></p>
         `
-      };
+      };   
       
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
@@ -194,6 +195,72 @@ app.post('/api/update-pricing', (req, res) => {
     if (err) return res.status(500).json({ message: 'Error updating large price' });
 
     res.status(200).json({ message: 'Pricing updated successfully' });
+  });
+});
+
+// Create reschedule and cancel routes with GET requests for rendering simple HTML pages
+
+// Reschedule booking page
+app.get('/reschedule', (req, res) => {
+  const bookingId = req.query.bookingId;
+  if (!bookingId) {
+    return res.status(400).send('Missing booking ID.');
+  }
+  res.send(`
+    <html>
+      <body>
+        <h1>Reschedule Booking #${bookingId}</h1>
+        <form method="POST" action="/confirm-reschedule">
+          <input type="hidden" name="bookingId" value="${bookingId}" />
+          <label for="newTime">New Time:</label>
+          <input type="datetime-local" name="newTime" required />
+          <button type="submit">Confirm Reschedule</button>
+        </form>
+      </body>
+    </html>
+  `);
+});
+
+// Confirm reschedule with POST request
+app.post('/confirm-reschedule', (req, res) => {
+  const { bookingId, newTime } = req.body;
+  const sql = `UPDATE bookings SET time = ? WHERE id = ?`;
+  db.run(sql, [newTime, bookingId], function (err) {
+    if (err) {
+      return res.status(500).send('Error rescheduling booking.');
+    }
+    res.send('Booking rescheduled successfully.');
+  });
+});
+
+// Cancel booking page
+app.get('/cancel', (req, res) => {
+  const bookingId = req.query.bookingId;
+  if (!bookingId) {
+    return res.status(400).send('Missing booking ID.');
+  }
+  res.send(`
+    <html>
+      <body>
+        <h1>Cancel Booking #${bookingId}</h1>
+        <form method="POST" action="/confirm-cancel">
+          <input type="hidden" name="bookingId" value="${bookingId}" />
+          <button type="submit">Yes, Cancel</button>
+        </form>
+      </body>
+    </html>
+  `);
+});
+
+// Confirm cancel with POST request
+app.post('/confirm-cancel', (req, res) => {
+  const { bookingId } = req.body;
+  const sql = `DELETE FROM bookings WHERE id = ?`;
+  db.run(sql, [bookingId], function (err) {
+    if (err) {
+      return res.status(500).send('Error canceling booking.');
+    }
+    res.send('Booking canceled successfully.');
   });
 });
 
