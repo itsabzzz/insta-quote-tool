@@ -84,18 +84,19 @@ app.post('/get-quote', (req, res) => {
   });
 });
 
-// POST route to submit bookings with business_id
 app.post('/submit-booking', (req, res) => {
-  const { size, condition, time, email, businessId } = req.body;
+  const { size, condition, time, email, businessId } = req.body; // Make sure to destructure all required variables here
   
+  // Define the SQL query to insert the booking
   const sql = `INSERT INTO bookings (size, condition, time, customer_email, business_id) VALUES (?, ?, ?, ?, ?)`;
+  
   db.run(sql, [size, condition, time, email, businessId], function(err) {
     if (err) {
       res.status(500).json({ message: 'Error saving booking' });
     } else {
       const bookingId = this.lastID;
 
-      // Send confirmation email
+      // Set up the nodemailer configuration
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -104,29 +105,59 @@ app.post('/submit-booking', (req, res) => {
         }
       });
 
-const mailOptions = {
-  from: 'your-email@gmail.com',
-  to: email,
-  subject: 'Booking Confirmation',
-  html: `
-    <h1>Booking Confirmation</h1>
-    <p>Car Size: ${size}</p>
-    <p>Condition: ${condition}</p>
-    <p>Time: ${time}</p>
-    <p><a href="https://insta-quote-tool-production.up.railway.app/reschedule?bookingId=${bookingId}">Reschedule</a> | <a href="https://insta-quote-tool-production.up.railway.app/cancel?bookingId=${bookingId}">Cancel</a></p>
-  `
-};
-      
-      transporter.sendMail(mailOptions, (error, info) => {
+      // Customer confirmation email
+      const customerMailOptions = {
+        from: 'your-email@gmail.com',
+        to: email,
+        subject: 'Booking Confirmation',
+        html: `
+          <h1>Booking Confirmation</h1>
+          <p>Car Size: ${size}</p>
+          <p>Condition: ${condition}</p>
+          <p>Time: ${time}</p>
+          <p><a href="https://insta-quote-tool-production.up.railway.app/reschedule?bookingId=${bookingId}">Reschedule</a> | <a href="https://insta-quote-tool-production.up.railway.app/cancel?bookingId=${bookingId}">Cancel</a></p>
+        `
+      };
+
+      // Send email to customer
+      transporter.sendMail(customerMailOptions, (error, info) => {
         if (error) {
-          res.status(500).json({ message: 'Error sending email' });
+          console.error('Error sending customer email:', error);
+          res.status(500).json({ message: 'Error sending customer email' });
         } else {
-          res.status(200).json({ message: 'Booking submitted successfully!' });
+          console.log('Customer email sent:', info.response);
         }
       });
+
+      // Owner notification email
+      const ownerEmail = 'owner@example.com'; // Replace with actual owner's email address
+      const ownerMailOptions = {
+        from: 'your-email@gmail.com',
+        to: ownerEmail,
+        subject: 'New Booking Notification',
+        html: `
+          <h1>New Booking Received</h1>
+          <p>Car Size: ${size}</p>
+          <p>Condition: ${condition}</p>
+          <p>Time: ${time}</p>
+          <p>Customer Email: ${email}</p>
+        `
+      };
+
+      // Send email to owner
+      transporter.sendMail(ownerMailOptions, (error, info) => {
+        if (error) {
+          console.error('Error sending owner email:', error);
+        } else {
+          console.log('Owner email sent:', info.response);
+        }
+      });
+
+      res.status(200).json({ message: 'Booking submitted successfully!' });
     }
   });
 });
+
 
 // Get bookings based on business_id
 app.get('/api/bookings', (req, res) => {
@@ -278,21 +309,7 @@ app.post('/confirm-cancel', (req, res) => {
 });
 
 
-// Add this code inside the /submit-booking route after sending the confirmation email
-const ownerEmail = 'owner@example.com'; // Replace with the business owner's email
 
-const ownerMailOptions = {
-    from: 'your-email@gmail.com', 
-    to: ownerEmail,
-    subject: 'New Booking Notification',
-    html: `
-        <h1>New Booking Received</h1>
-        <p>Car Size: ${size}</p>
-        <p>Condition: ${condition}</p>
-        <p>Time: ${time}</p>
-        <p>Customer Email: ${email}</p>
-    `
-};
 
 transporter.sendMail(ownerMailOptions, (error, info) => {
     if (error) {
