@@ -6,6 +6,8 @@ const port = 5000;
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt'); // or use 'bcryptjs' if 'bcrypt' has issues
 const saltRounds = 10;
+const bcrypt = require('bcryptjs');
+
 
 // Initialize SQLite database
 const db = new sqlite3.Database('./car_detailing.db', (err) => {
@@ -309,11 +311,9 @@ app.post('/confirm-cancel', (req, res) => {
   });
 });
 
-// Registration Endpoint
 app.post('/register', (req, res) => {
   const { name, email, password } = req.body;
-  const hashedPassword = bcrypt.hashSync(password, 10);
-
+  const hashedPassword = bcrypt.hashSync(password, saltRounds);
   const sql = `INSERT INTO businesses (name, email, password) VALUES (?, ?, ?)`;
   db.run(sql, [name, email, hashedPassword], function(err) {
     if (err) return res.status(500).json({ message: 'Registration failed' });
@@ -321,11 +321,9 @@ app.post('/register', (req, res) => {
   });
 });
 
-// Login Endpoint
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const sql = `SELECT * FROM businesses WHERE email = ?`;
-
   db.get(sql, [email], (err, business) => {
     if (err || !business) return res.status(401).json({ message: 'Invalid email or password' });
     if (!bcrypt.compareSync(password, business.password)) return res.status(401).json({ message: 'Invalid email or password' });
