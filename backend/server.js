@@ -4,9 +4,8 @@ const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const port = 5000;
 const nodemailer = require('nodemailer');
-const bcrypt = require('bcrypt'); // or use 'bcryptjs' if 'bcrypt' has issues
-const saltRounds = 10;
 const bcrypt = require('bcryptjs');
+const saltRounds = 10;
 
 
 // Initialize SQLite database
