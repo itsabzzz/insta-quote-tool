@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();  
+const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const port = process.env.PORT || 5001;
 const nodemailer = require('nodemailer');
@@ -15,14 +15,17 @@ const db = new sqlite3.Database('./car_detailing.db', (err) => {
     console.log('Connected to the SQLite database.');
   }
 });
-
 // CORS setup
 app.use(cors({
-  origin: 'https://itsabzzz.github.io',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: 'https://itsabzzz.github.io', // Allow your GitHub Pages origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
+
+// Handle preflight OPTIONS requests
+app.options('*', cors()); 
+
 
 app.use(express.json()); // To parse JSON bodies
 
