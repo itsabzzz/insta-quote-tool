@@ -4,7 +4,7 @@ const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const port = 5000;
 const nodemailer = require('nodemailer');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt'); // or use 'bcryptjs' if 'bcrypt' has issues
 const saltRounds = 10;
 
 // Initialize SQLite database
@@ -16,19 +16,19 @@ const db = new sqlite3.Database('./car_detailing.db', (err) => {
   }
 });
 
-// Update your CORS configuration in server.js
+app.use(express.json()); // For parsing application/json
+
+// CORS setup
 const corsOptions = {
-  origin: 'https://itsabzzz.github.io', // Your GitHub Pages URL
+  origin: 'https://itsabzzz.github.io',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 };
-
 app.use(cors(corsOptions));
 
 
 
-app.use(express.json()); // To parse JSON bodies
 
 // Create tables if they don't exist, including business_id column
 db.serialize(() => {
@@ -182,17 +182,7 @@ app.get('/api/bookings', (req, res) => {
   });
 });
 
-// POST route to handle login
-app.post('/login', (req, res) => {
-  const { email, password } = req.body;
 
-  // Check if the email and password match the environment variables
-  if (email === process.env.EMAIL_USER && password === process.env.EMAIL_PASS) {
-    res.status(200).json({ business_id: 1 }); // Assuming a business ID of 1 for testing
-  } else {
-    res.status(401).json({ message: 'Invalid email or password' });
-  }
-});
 
 // POST route to handle updating business settings
 app.post('/api/update-business-settings', (req, res) => {
@@ -319,36 +309,32 @@ app.post('/confirm-cancel', (req, res) => {
   });
 });
 
-// Business registration
+// Registration Endpoint
 app.post('/register', (req, res) => {
   const { name, email, password } = req.body;
-  const hashedPassword = bcrypt.hashSync(password, saltRounds);
+  const hashedPassword = bcrypt.hashSync(password, 10);
 
   const sql = `INSERT INTO businesses (name, email, password) VALUES (?, ?, ?)`;
   db.run(sql, [name, email, hashedPassword], function(err) {
-    if (err) {
-      return res.status(500).json({ message: 'Registration failed' });
-    }
+    if (err) return res.status(500).json({ message: 'Registration failed' });
     res.status(201).json({ message: 'Business registered successfully' });
   });
 });
 
-// Business login
+// Login Endpoint
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
-
   const sql = `SELECT * FROM businesses WHERE email = ?`;
+
   db.get(sql, [email], (err, business) => {
-    if (err || !business) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    if (!bcrypt.compareSync(password, business.password)) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
+    if (err || !business) return res.status(401).json({ message: 'Invalid email or password' });
+    if (!bcrypt.compareSync(password, business.password)) return res.status(401).json({ message: 'Invalid email or password' });
     res.status(200).json({ business_id: business.id });
   });
+});
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
 
 
