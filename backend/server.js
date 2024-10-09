@@ -18,29 +18,31 @@ const db = new sqlite3.Database('./car_detailing.db', (err) => {
 app.use(express.json()); // For parsing application/json
 
 // Set up CORS to allow all methods from the specified origin
-app.use(cors({
-  origin: 'https://itsabzzz.github.io', // Your front-end origin
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
+app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }));
+app.options('*', cors({ origin: '*' })); 
 
-// Handle preflight OPTIONS requests
-app.options('*', cors()); 
 
-// Registration route
+
+
+
 app.post('/register', (req, res) => {
+  console.log('Registration Request:', req.body);
   const { name, email, password } = req.body;
+  if (!name || !email || !password) {
+    console.error('Missing fields');
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
   const hashedPassword = bcrypt.hashSync(password, saltRounds);
-  
-  const sql = `INSERT INTO businesses (name, email, password) VALUES (?, ?, ?)`;
-  db.run(sql, [name, email, hashedPassword], function(err) {
+  db.run(`INSERT INTO businesses (name, email, password) VALUES (?, ?, ?)`, [name, email, hashedPassword], function(err) {
     if (err) {
+      console.error('Error in registration:', err.message);
       return res.status(500).json({ message: 'Registration failed' });
     }
+    console.log('Registration successful');
     res.status(201).json({ message: 'Business registered successfully' });
   });
 });
+
 
 // Login route
 app.post('/login', (req, res) => {
