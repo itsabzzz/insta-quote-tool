@@ -18,7 +18,7 @@ const db = new sqlite3.Database('./car_detailing.db', (err) => {
 
 // CORS Setup
 app.use(cors({
-  origin: 'https://itsabzzz.github.io', // Restrict to your frontend origin
+  origin: true, // Restrict to your frontend origin
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
