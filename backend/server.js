@@ -15,9 +15,11 @@ const db = new sqlite3.Database('./car_detailing.db', (err) => {
     console.log('Connected to the SQLite database.');
   }
 });
-// CORS setup
+app.use(express.json()); // For parsing application/json
+
+// Set up CORS to allow all methods from the specified origin
 app.use(cors({
-  origin: 'https://itsabzzz.github.io', // Allow your GitHub Pages origin
+  origin: 'https://itsabzzz.github.io', // Your front-end origin
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -26,8 +28,37 @@ app.use(cors({
 // Handle preflight OPTIONS requests
 app.options('*', cors()); 
 
+// Registration route
+app.post('/register', (req, res) => {
+  const { name, email, password } = req.body;
+  const hashedPassword = bcrypt.hashSync(password, saltRounds);
+  
+  const sql = `INSERT INTO businesses (name, email, password) VALUES (?, ?, ?)`;
+  db.run(sql, [name, email, hashedPassword], function(err) {
+    if (err) {
+      return res.status(500).json({ message: 'Registration failed' });
+    }
+    res.status(201).json({ message: 'Business registered successfully' });
+  });
+});
 
-app.use(express.json()); // To parse JSON bodies
+// Login route
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  const sql = `SELECT * FROM businesses WHERE email = ?`;
+  db.get(sql, [email], (err, business) => {
+    if (err || !business) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    if (!bcrypt.compareSync(password, business.password)) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    res.status(200).json({ business_id: business.id });
+  });
+});
 
 // Create tables if they don't exist, including business_id column
 db.serialize(() => {
@@ -68,33 +99,23 @@ db.serialize(() => {
     ('large', 150, 1)`);
 });
 
-// Handle registration of new businesses
-app.post('/register', (req, res) => {
-  const { name, email, password } = req.body;
-  const hashedPassword = bcrypt.hashSync(password, saltRounds);
-  const sql = `INSERT INTO businesses (name, email, password) VALUES (?, ?, ?)`;
-  db.run(sql, [name, email, hashedPassword], function(err) {
+// Sample POST route
+app.post('/update-availability', (req, res) => {
+  const { date, time, businessId } = req.body;
+
+  if (!date || !time || !businessId) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  const sql = `INSERT INTO availability (date, time, business_id) VALUES (?, ?, ?)`;
+  db.run(sql, [date, time, businessId], function(err) {
     if (err) {
-      return res.status(500).json({ message: 'Registration failed' });
+      return res.status(500).json({ message: 'Error updating availability' });
     }
-    res.status(201).json({ message: 'Business registered successfully' });
+    res.status(200).json({ message: 'Availability updated successfully' });
   });
 });
 
-// Handle login for businesses
-app.post('/login', (req, res) => {
-  const { email, password } = req.body;
-  const sql = `SELECT * FROM businesses WHERE email = ?`;
-  db.get(sql, [email], (err, business) => {
-    if (err || !business) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-    if (!bcrypt.compareSync(password, business.password)) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-    res.status(200).json({ business_id: business.id });
-  });
-});
 
 // Handle quote retrieval
 app.post('/get-quote', (req, res) => {
@@ -109,6 +130,7 @@ app.post('/get-quote', (req, res) => {
     res.status(200).json({ price });
   });
 });
+
 
 // Submit booking and send email notifications
 app.post('/submit-booking', (req, res) => {
