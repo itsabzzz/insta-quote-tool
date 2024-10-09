@@ -16,11 +16,19 @@ const db = new sqlite3.Database('./car_detailing.db', (err) => {
   }
 });
 
+
+// Define specific CORS options if needed
+const corsOptions = {
+  origin: '*', // For development: allow all origins. Change to specific domains in production.
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+};
+
+app.use(express.json()); // To parse JSON bodies
+app.use(cors(corsOptions)); // Enable CORS with specific options
 // Middleware for parsing JSON and enabling CORS
-app.use(express.json());
 
 // Setup CORS for all routes
-const allowedOrigins = ['https://itsabzzz.github.io', 'https://your-other-frontend-domain.com']; // Add more allowed origins as needed
 
 const corsOptionsDelegate = function (req, callback) {
   let corsOptions;
