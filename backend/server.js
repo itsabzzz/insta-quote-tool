@@ -1,57 +1,92 @@
 const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
+const app = express();
+const port = process.env.PORT || 8080;
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
-const app = express();
-const port = process.env.PORT || 5001;
 const saltRounds = 10;
 
 // Initialize SQLite database
 const db = new sqlite3.Database('./car_detailing.db', (err) => {
   if (err) {
-    console.error('Database connection error:', err.message);
+    console.error(err.message);
   } else {
     console.log('Connected to the SQLite database.');
   }
 });
 
-// CORS Setup
-app.use(cors({
-  origin: true, // Restrict to your frontend origin
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
+// Middleware for parsing JSON and enabling CORS
+app.use(express.json());
 
-app.options('*', cors()); // Enable preflight for all routes
+// Setup CORS for all routes
+const allowedOrigins = ['https://itsabzzz.github.io', 'https://your-other-frontend-domain.com']; // Add more allowed origins as needed
 
-app.use(express.json()); // For parsing application/json
+const corsOptionsDelegate = function (req, callback) {
+  let corsOptions;
+  if (allowedOrigins.indexOf(req.header('Origin')) !== -1) {
+    corsOptions = { origin: true, credentials: true }; // Reflect (enable) the requested origin in the CORS response
+  } else {
+    corsOptions = { origin: false }; // Disable CORS for this request
+  }
+  callback(null, corsOptions); // callback expects two parameters: error and options
+};
 
-// Routes for your application
+// Apply CORS for all routes with dynamic origin
+app.use(cors(corsOptionsDelegate));
+
+// Enable pre-flight for all routes
+app.options('*', cors(corsOptionsDelegate));
+
+// Registration Route
 app.post('/register', (req, res) => {
   const { name, email, password } = req.body;
   const hashedPassword = bcrypt.hashSync(password, saltRounds);
-
-  db.run(`INSERT INTO businesses (name, email, password) VALUES (?, ?, ?)`, [name, email, hashedPassword], function(err) {
+  const sql = `INSERT INTO businesses (name, email, password) VALUES (?, ?, ?)`;
+  
+  db.run(sql, [name, email, hashedPassword], function(err) {
     if (err) {
-      console.error('Registration error:', err.message);
       return res.status(500).json({ message: 'Registration failed' });
     }
     res.status(201).json({ message: 'Business registered successfully' });
   });
 });
 
+// Login Route
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
+  const sql = `SELECT * FROM businesses WHERE email = ?`;
 
-  db.get(`SELECT * FROM businesses WHERE email = ?`, [email], (err, business) => {
-    if (err || !business || !bcrypt.compareSync(password, business.password)) {
+  db.get(sql, [email], (err, business) => {
+    if (err || !business) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+
+    if (!bcrypt.compareSync(password, business.password)) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
     res.status(200).json({ business_id: business.id });
   });
 });
+
+// Example POST route to handle availability updates
+app.post('/update-availability', cors(corsOptionsDelegate), (req, res) => {
+  const { date, time, businessId } = req.body;
+
+  if (!date || !time || !businessId) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  const sql = `INSERT INTO availability (date, time, business_id) VALUES (?, ?, ?)`;
+  db.run(sql, [date, time, businessId], function(err) {
+    if (err) {
+      return res.status(500).json({ message: 'Error updating availability' });
+    }
+    res.status(200).json({ message: 'Availability updated successfully' });
+  });
+});
+
 
 app.post('/get-quote', (req, res) => {
   const { size, condition, businessId } = req.body;
@@ -133,22 +168,6 @@ db.serialize(() => {
     ('large', 150, 1)`);
 });
 
-// Sample POST route
-app.post('/update-availability', (req, res) => {
-  const { date, time, businessId } = req.body;
-
-  if (!date || !time || !businessId) {
-    return res.status(400).json({ message: 'Missing required fields' });
-  }
-
-  const sql = `INSERT INTO availability (date, time, business_id) VALUES (?, ?, ?)`;
-  db.run(sql, [date, time, businessId], function(err) {
-    if (err) {
-      return res.status(500).json({ message: 'Error updating availability' });
-    }
-    res.status(200).json({ message: 'Availability updated successfully' });
-  });
-});
 
 
 app.use((req, res) => {
