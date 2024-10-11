@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const port = 5000;
+const axios = require('axios');
+
 
 // Define specific CORS options if needed
 const corsOptions = {
@@ -38,6 +40,32 @@ app.post('/submit-booking', (req, res) => {
   res.status(200).json({ message: 'Booking submitted successfully!' });
 });
 
+
+// Add the route to get a distance-based quote
+app.post('/get-distance-quote', async (req, res) => {
+  const { businessAddress, customerAddress, baseQuote } = req.body;
+  const apiKey = process.env.GOOGLE_API_KEY; // Store this securely
+
+  try {
+    const response = await axios.get(`https://maps.googleapis.com/maps/api/distancematrix/json`, {
+      params: {
+        origins: businessAddress,
+        destinations: customerAddress,
+        key: apiKey
+      }
+    });
+
+    const distanceInKm = response.data.rows[0].elements[0].distance.value / 1000;
+    const travelCost = distanceInKm * 0.5; // Example rate per km
+    const finalQuote = baseQuote + travelCost;
+
+    res.json({ quote: finalQuote, distance: distanceInKm });
+
+  } catch (error) {
+    console.error('Error fetching distance:', error);
+    res.status(500).json({ message: 'Error calculating distance' });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
