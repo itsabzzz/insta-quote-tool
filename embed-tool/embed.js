@@ -1,13 +1,22 @@
 (function() {
-  // Create the button to open the modal
-  var openBtn = document.createElement('button');
-  openBtn.innerText = 'Get an Instant Quote';
-  openBtn.style.marginLeft = '10px';
-  openBtn.style.padding = '10px 20px';
-  openBtn.style.backgroundColor = '#007bff';
-  openBtn.style.color = '#fff';
-  openBtn.style.border = 'none';
-  openBtn.style.cursor = 'pointer';
+  window.addEventListener('DOMContentLoaded', function() {
+    // Create the button to open the modal
+    var openBtn = document.createElement('button');
+    openBtn.innerText = 'Get an Instant Quote';
+    openBtn.style.marginLeft = '10px';
+    openBtn.style.padding = '10px 20px';
+    openBtn.style.backgroundColor = '#007bff';
+    openBtn.style.color = '#fff';
+    openBtn.style.border = 'none';
+    openBtn.style.cursor = 'pointer';
+
+    // Append the button to a known container
+    var container = document.querySelector('p'); // Replace with an existing container if needed
+    if (!container) {
+        console.error('Container element not found.');
+        return;
+    }
+    container.appendChild(openBtn);
 
   // Append the button next to the paragraph
   var paragraph = document.querySelector('p');
@@ -199,3 +208,4 @@ submitBtn.onclick = function(e) {
   form.appendChild(submitBtn);
   modal.appendChild(form);
 })();
+});
