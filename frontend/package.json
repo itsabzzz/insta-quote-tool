@@ -44,6 +44,6 @@
   "devDependencies": {
     "css-minimizer-webpack-plugin": "^7.0.0",
     "eslint-plugin-jsx-a11y": "^6.10.0",
-    "gh-pages": "^4.0.0"
+    "gh-pages": "^5.0.0"
   }
 }
