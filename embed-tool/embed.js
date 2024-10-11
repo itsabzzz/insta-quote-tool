@@ -1,8 +1,5 @@
 (function() {
   window.addEventListener('DOMContentLoaded', function() {
-    console.log("Embed script loaded");
-
-    // Create the button to open the modal
     var openBtn = document.createElement('button');
     openBtn.innerText = 'Get an Instant Quote';
     openBtn.style.marginLeft = '10px';
@@ -12,6 +9,12 @@
     openBtn.style.border = 'none';
     openBtn.style.cursor = 'pointer';
 
+    var paragraph = document.querySelector('p');
+    if (paragraph) {
+        paragraph.appendChild(openBtn);
+    } else {
+        console.error('Paragraph element not found.');
+    }
     // Append the button to a known container
     var container = document.querySelector('p'); // Replace with an existing container if needed
     if (!container) {
