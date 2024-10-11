@@ -1,5 +1,7 @@
 (function() {
   window.addEventListener('DOMContentLoaded', function() {
+    console.log("Embed script loaded");
+
     // Create the button to open the modal
     var openBtn = document.createElement('button');
     openBtn.innerText = 'Get an Instant Quote';
