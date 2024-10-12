@@ -63,7 +63,7 @@
     overlay.style.display = 'block';
   };
 
-  // Form content (Car Size, Condition, and Calendar for Booking)
+  // Form content
   var form = document.createElement('form');
 
   // Car size dropdown
@@ -92,25 +92,28 @@
     selectCondition.appendChild(option);
   });
 
-  // Time slot dropdown
-  var labelTime = document.createElement('label');
-  labelTime.innerText = 'Select Time Slot:';
-  var selectTime = document.createElement('select');
-  selectTime.style.display = 'block';
-  selectTime.style.marginTop = '10px';
-  ['9:00 AM', '11:00 AM', '1:00 PM', '3:00 PM'].forEach(function(time) {
-    var option = document.createElement('option');
-    option.value = time;
-    option.text = time;
-    selectTime.appendChild(option);
-  });
+  // Customer address input
+  var labelCustomerAddress = document.createElement('label');
+  labelCustomerAddress.innerText = 'Enter Customer Address:';
+  var inputCustomerAddress = document.createElement('input');
+  inputCustomerAddress.style.display = 'block';
+  inputCustomerAddress.style.marginTop = '10px';
+
+  // Business address input
+  var labelBusinessAddress = document.createElement('label');
+  labelBusinessAddress.innerText = 'Enter Business Address:';
+  var inputBusinessAddress = document.createElement('input');
+  inputBusinessAddress.style.display = 'block';
+  inputBusinessAddress.style.marginTop = '10px';
 
   form.appendChild(labelSize);
   form.appendChild(selectSize);
   form.appendChild(labelCondition);
   form.appendChild(selectCondition);
-  form.appendChild(labelTime);
-  form.appendChild(selectTime);
+  form.appendChild(labelCustomerAddress);
+  form.appendChild(inputCustomerAddress);
+  form.appendChild(labelBusinessAddress);
+  form.appendChild(inputBusinessAddress);
 
   // Submit button for fetching the quote
   var submitBtn = document.createElement('button');
@@ -125,30 +128,30 @@
 
     const size = selectSize.value;
     const condition = selectCondition.value;
-    const time = selectTime.value;
+    const customerAddress = inputCustomerAddress.value;
+    const businessAddress = inputBusinessAddress.value;
 
-    if (!size || !condition || !time) {
+    if (!size || !condition || !customerAddress || !businessAddress) {
         alert('Please select all fields.');
         return;
     }
 
-    // Send data to the backend to calculate the quote
+    // Send data to the backend to calculate the quote with distance
     fetch('https://insta-quote-tool-production.up.railway.app/get-quote', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ size: size, condition: condition })
+      body: JSON.stringify({ size, condition, customerAddress, businessAddress })
     })
     .then(response => response.json())
     .then(data => {
       // Show the fetched quote and "Continue to Booking" button
-      modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p><p>Selected time slot: ${time}</p>`;
+      modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p>`;
 
       const continueBtn = document.createElement('button');
       continueBtn.innerText = 'Continue to Booking';
 
-      // When clicking "Continue to Booking"
       continueBtn.onclick = function() {
         modal.innerHTML = '';  // Clear the modal content
 
@@ -164,7 +167,6 @@
         bookNowBtn.innerText = 'Book Now';
         bookNowBtn.style.marginTop = '20px';
 
-        // Booking submission logic after taking email
         bookNowBtn.onclick = function() {
           const email = inputEmail.value;
 
@@ -179,7 +181,7 @@
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ size, condition, time, email })
+            body: JSON.stringify({ size, condition, customerAddress, businessAddress, email })
           })
           .then(response => response.json())
           .then(data => {
