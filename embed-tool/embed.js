@@ -32,7 +32,7 @@
   modal.style.left = '50%';
   modal.style.transform = 'translate(-50%, -50%)';
   modal.style.width = '90%';
-  modal.style.maxWidth = '400px';
+  modal.style.maxWidth = '500px';
   modal.style.backgroundColor = '#fff';
   modal.style.padding = '20px';
   modal.style.borderRadius = '10px';
@@ -62,13 +62,15 @@
   openBtn.onclick = function() {
     modal.style.display = 'block';
     overlay.style.display = 'block';
-    renderFirstScreen();
+    showScreenOne();
   };
 
-  // Form content screens
-  function renderFirstScreen() {
+  // Screen One: Car Size and Condition
+  function showScreenOne() {
     modal.innerHTML = '';
     modal.appendChild(closeBtn);
+
+    var form = document.createElement('form');
 
     // Car size dropdown
     var labelSize = document.createElement('label');
@@ -96,111 +98,82 @@
       selectCondition.appendChild(option);
     });
 
-    // Service type dropdown
-    var labelService = document.createElement('label');
-    labelService.innerText = 'Select Service Type:';
-    var selectService = document.createElement('select');
-    selectService.style.display = 'block';
-    selectService.style.marginTop = '10px';
-    ['Basic Wash', 'Full Detailing', 'Ceramic Coating'].forEach(function(service) {
-      var option = document.createElement('option');
-      option.value = service.toLowerCase();
-      option.text = service;
-      selectService.appendChild(option);
-    });
+    form.appendChild(labelSize);
+    form.appendChild(selectSize);
+    form.appendChild(labelCondition);
+    form.appendChild(selectCondition);
 
+    // Next button
     var nextBtn = document.createElement('button');
     nextBtn.innerText = 'Next';
     nextBtn.style.marginTop = '20px';
-
     nextBtn.onclick = function(e) {
       e.preventDefault();
-      const size = selectSize.value;
-      const condition = selectCondition.value;
-      const service = selectService.value;
-
-      if (!size || !condition || !service) {
+      if (selectSize.value && selectCondition.value) {
+        showScreenTwo(selectSize.value, selectCondition.value);
+      } else {
         alert('Please select all fields.');
-        return;
       }
-      renderSecondScreen(size, condition, service);
     };
 
-    modal.appendChild(labelSize);
-    modal.appendChild(selectSize);
-    modal.appendChild(labelCondition);
-    modal.appendChild(selectCondition);
-    modal.appendChild(labelService);
-    modal.appendChild(selectService);
-    modal.appendChild(nextBtn);
+    form.appendChild(nextBtn);
+    modal.appendChild(form);
   }
 
-  function renderSecondScreen(size, condition, service) {
+  // Screen Two: Booking Date and Address
+  function showScreenTwo(size, condition) {
     modal.innerHTML = '';
     modal.appendChild(closeBtn);
 
-    // Date input
+    var form = document.createElement('form');
+
+    // Booking date input
     var labelDate = document.createElement('label');
-    labelDate.innerText = 'Select Date:';
+    labelDate.innerText = 'Select Booking Date and Time:';
     var inputDate = document.createElement('input');
-    inputDate.type = 'date';
+    inputDate.type = 'datetime-local';
     inputDate.style.display = 'block';
     inputDate.style.marginTop = '10px';
-    inputDate.style.width = '100%';
 
-    // Time slot dropdown
-    var labelTime = document.createElement('label');
-    labelTime.innerText = 'Select Time Slot:';
-    var selectTime = document.createElement('select');
-    selectTime.style.display = 'block';
-    selectTime.style.marginTop = '10px';
-    ['9:00 AM', '11:00 AM', '1:00 PM', '3:00 PM'].forEach(function(time) {
-      var option = document.createElement('option');
-      option.value = time;
-      option.text = time;
-      selectTime.appendChild(option);
-    });
+    // Customer address input with postcode auto-complete
+    var labelAddress = document.createElement('label');
+    labelAddress.innerText = 'Enter Your Address:';
+    var inputAddress = document.createElement('input');
+    inputAddress.type = 'text';
+    inputAddress.style.display = 'block';
+    inputAddress.style.marginTop = '10px';
+    inputAddress.placeholder = 'Enter your postcode...';
 
-    // Upsell option for same or next day service
-    var labelUpsell = document.createElement('label');
-    labelUpsell.innerText = 'Would you like same/next day service for an additional fee?';
-    var selectUpsell = document.createElement('select');
-    selectUpsell.style.display = 'block';
-    selectUpsell.style.marginTop = '10px';
-    ['No', 'Yes'].forEach(function(optionText) {
-      var option = document.createElement('option');
-      option.value = optionText.toLowerCase();
-      option.text = optionText;
-      selectUpsell.appendChild(option);
-    });
-
-    var nextBtn = document.createElement('button');
-    nextBtn.innerText = 'Get Quote';
-    nextBtn.style.marginTop = '20px';
-
-    nextBtn.onclick = function(e) {
-      e.preventDefault();
-      const date = inputDate.value;
-      const time = selectTime.value;
-      const upsell = selectUpsell.value;
-
-      if (!date || !time) {
-        alert('Please select a date and time slot.');
-        return;
-      }
-      renderQuoteScreen(size, condition, service, date, time, upsell);
+    // Assuming we have a function to handle address auto-complete
+    inputAddress.oninput = function() {
+      // Placeholder for address lookup functionality
+      console.log('Auto-complete suggestions for:', inputAddress.value);
     };
 
-    modal.appendChild(labelDate);
-    modal.appendChild(inputDate);
-    modal.appendChild(labelTime);
-    modal.appendChild(selectTime);
-    modal.appendChild(labelUpsell);
-    modal.appendChild(selectUpsell);
-    modal.appendChild(nextBtn);
+    form.appendChild(labelDate);
+    form.appendChild(inputDate);
+    form.appendChild(labelAddress);
+    form.appendChild(inputAddress);
+
+    // Next button
+    var nextBtn = document.createElement('button');
+    nextBtn.innerText = 'Next';
+    nextBtn.style.marginTop = '20px';
+    nextBtn.onclick = function(e) {
+      e.preventDefault();
+      if (inputDate.value && inputAddress.value) {
+        showScreenThree(size, condition, inputDate.value, inputAddress.value);
+      } else {
+        alert('Please fill in all fields.');
+      }
+    };
+
+    form.appendChild(nextBtn);
+    modal.appendChild(form);
   }
 
-  function renderQuoteScreen(size, condition, service, date, time, upsell) {
+  // Screen Three: Quote Result and Booking
+  function showScreenThree(size, condition, dateTime, address) {
     modal.innerHTML = '';
     modal.appendChild(closeBtn);
 
@@ -210,71 +183,74 @@
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ size, condition, service, date, time, upsell })
+      body: JSON.stringify({ size: size, condition: condition })
     })
     .then(response => response.json())
     .then(data => {
-      // Show the fetched quote and "Continue to Booking" button
-      modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p><p>Selected date: ${date}</p><p>Selected time slot: ${time}</p>`;
+      // Show the fetched quote
+      var quoteContainer = document.createElement('div');
+      quoteContainer.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p><p>Selected Date and Time: ${dateTime}</p>`;
+      modal.appendChild(quoteContainer);
 
-      const continueBtn = document.createElement('button');
+      // Continue to booking button
+      var continueBtn = document.createElement('button');
       continueBtn.innerText = 'Continue to Booking';
-
-      // When clicking "Continue to Booking"
+      continueBtn.style.marginTop = '20px';
       continueBtn.onclick = function() {
-        modal.innerHTML = '';  // Clear the modal content
-
-        // Email intake form
-        var labelEmail = document.createElement('label');
-        labelEmail.innerText = 'Enter Email:';
-        var inputEmail = document.createElement('input');
-        inputEmail.type = 'email';
-        inputEmail.style.display = 'block';
-        inputEmail.style.marginTop = '10px';
-
-        var bookNowBtn = document.createElement('button');
-        bookNowBtn.innerText = 'Book Now';
-        bookNowBtn.style.marginTop = '20px';
-
-        // Booking submission logic after taking email
-        bookNowBtn.onclick = function() {
-          const email = inputEmail.value;
-
-          if (!email) {
-            alert('Please enter your email.');
-            return;
-          }
-
-          // Submit the booking with email
-          fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ size, condition, service, date, time, email, upsell })
-          })
-          .then(response => response.json())
-          .then(data => {
-            modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
-          })
-          .catch(error => console.error('Error submitting booking:', error));
-        };
-
-        modal.appendChild(labelEmail);
-        modal.appendChild(inputEmail);
-        modal.appendChild(bookNowBtn);
+        showBookingScreen(size, condition, dateTime, address, data.price);
       };
 
       modal.appendChild(continueBtn);
-
-      const closeQuoteBtn = document.createElement('button');
-      closeQuoteBtn.innerText = 'Close';
-      closeQuoteBtn.onclick = function() {
-        modal.style.display = 'none';
-        overlay.style.display = 'none';
-      };
-      modal.appendChild(closeQuoteBtn);
     })
     .catch(error => console.error('Error:', error));
+  }
+
+  // Booking Screen: Enter Email and Confirm Booking
+  function showBookingScreen(size, condition, dateTime, address, price) {
+    modal.innerHTML = '';
+    modal.appendChild(closeBtn);
+
+    var form = document.createElement('form');
+
+    // Email input
+    var labelEmail = document.createElement('label');
+    labelEmail.innerText = 'Enter Your Email:';
+    var inputEmail = document.createElement('input');
+    inputEmail.type = 'email';
+    inputEmail.style.display = 'block';
+    inputEmail.style.marginTop = '10px';
+
+    form.appendChild(labelEmail);
+    form.appendChild(inputEmail);
+
+    // Book now button
+    var bookNowBtn = document.createElement('button');
+    bookNowBtn.innerText = 'Book Now';
+    bookNowBtn.style.marginTop = '20px';
+    bookNowBtn.onclick = function(e) {
+      e.preventDefault();
+      const email = inputEmail.value;
+      if (!email) {
+        alert('Please enter your email.');
+        return;
+      }
+
+      // Submit the booking with email
+      fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ size, condition, dateTime, address, email })
+      })
+      .then(response => response.json())
+      .then(data => {
+        modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
+      })
+      .catch(error => console.error('Error submitting booking:', error));
+    };
+
+    form.appendChild(bookNowBtn);
+    modal.appendChild(form);
   }
 })();
