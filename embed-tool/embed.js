@@ -65,7 +65,7 @@
     showScreenOne();
   };
 
-  // Screen One: Car Size and Condition
+  // Screen One: Car Size, Condition, and Service
   function showScreenOne() {
     modal.innerHTML = '';
     modal.appendChild(closeBtn);
@@ -98,10 +98,25 @@
       selectCondition.appendChild(option);
     });
 
+    // Service type dropdown
+    var labelService = document.createElement('label');
+    labelService.innerText = 'Select Service Type:';
+    var selectService = document.createElement('select');
+    selectService.style.display = 'block';
+    selectService.style.marginTop = '10px';
+    ['Exterior Wash', 'Interior Detailing', 'Full Package'].forEach(function(service) {
+      var option = document.createElement('option');
+      option.value = service.toLowerCase().replace(' ', '-');
+      option.text = service;
+      selectService.appendChild(option);
+    });
+
     form.appendChild(labelSize);
     form.appendChild(selectSize);
     form.appendChild(labelCondition);
     form.appendChild(selectCondition);
+    form.appendChild(labelService);
+    form.appendChild(selectService);
 
     // Next button
     var nextBtn = document.createElement('button');
@@ -109,8 +124,8 @@
     nextBtn.style.marginTop = '20px';
     nextBtn.onclick = function(e) {
       e.preventDefault();
-      if (selectSize.value && selectCondition.value) {
-        showScreenTwo(selectSize.value, selectCondition.value);
+      if (selectSize.value && selectCondition.value && selectService.value) {
+        showScreenTwo(selectSize.value, selectCondition.value, selectService.value);
       } else {
         alert('Please select all fields.');
       }
@@ -121,7 +136,7 @@
   }
 
   // Screen Two: Booking Date and Address
-  function showScreenTwo(size, condition) {
+  function showScreenTwo(size, condition, service) {
     modal.innerHTML = '';
     modal.appendChild(closeBtn);
 
@@ -162,7 +177,7 @@
     nextBtn.onclick = function(e) {
       e.preventDefault();
       if (inputDate.value && inputAddress.value) {
-        showScreenThree(size, condition, inputDate.value, inputAddress.value);
+        showScreenThree(size, condition, service, inputDate.value, inputAddress.value);
       } else {
         alert('Please fill in all fields.');
       }
@@ -173,7 +188,7 @@
   }
 
   // Screen Three: Quote Result and Booking
-  function showScreenThree(size, condition, dateTime, address) {
+  function showScreenThree(size, condition, service, dateTime, address) {
     modal.innerHTML = '';
     modal.appendChild(closeBtn);
 
@@ -183,7 +198,7 @@
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ size: size, condition: condition })
+      body: JSON.stringify({ size: size, condition: condition, service: service })
     })
     .then(response => response.json())
     .then(data => {
@@ -197,60 +212,59 @@
       continueBtn.innerText = 'Continue to Booking';
       continueBtn.style.marginTop = '20px';
       continueBtn.onclick = function() {
-        showBookingScreen(size, condition, dateTime, address, data.price);
+        modal.innerHTML = '';  // Clear the modal content
+
+        // Email intake form
+        var labelEmail = document.createElement('label');
+        labelEmail.innerText = 'Enter Email:';
+        var inputEmail = document.createElement('input');
+        inputEmail.type = 'email';
+        inputEmail.style.display = 'block';
+        inputEmail.style.marginTop = '10px';
+
+        var bookNowBtn = document.createElement('button');
+        bookNowBtn.innerText = 'Book Now';
+        bookNowBtn.style.marginTop = '20px';
+
+        // Booking submission logic after taking email
+        bookNowBtn.onclick = function() {
+          const email = inputEmail.value;
+
+          if (!email) {
+            alert('Please enter your email.');
+            return;
+          }
+
+          // Submit the booking with email
+          fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ size, condition, service, dateTime, address, email })
+          })
+          .then(response => response.json())
+          .then(data => {
+            modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
+          })
+          .catch(error => console.error('Error submitting booking:', error));
+        };
+
+        modal.appendChild(labelEmail);
+        modal.appendChild(inputEmail);
+        modal.appendChild(bookNowBtn);
       };
 
       modal.appendChild(continueBtn);
+
+      const closeQuoteBtn = document.createElement('button');
+      closeQuoteBtn.innerText = 'Close';
+      closeQuoteBtn.onclick = function() {
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
+      };
+      modal.appendChild(closeQuoteBtn);
     })
     .catch(error => console.error('Error:', error));
-  }
-
-  // Booking Screen: Enter Email and Confirm Booking
-  function showBookingScreen(size, condition, dateTime, address, price) {
-    modal.innerHTML = '';
-    modal.appendChild(closeBtn);
-
-    var form = document.createElement('form');
-
-    // Email input
-    var labelEmail = document.createElement('label');
-    labelEmail.innerText = 'Enter Your Email:';
-    var inputEmail = document.createElement('input');
-    inputEmail.type = 'email';
-    inputEmail.style.display = 'block';
-    inputEmail.style.marginTop = '10px';
-
-    form.appendChild(labelEmail);
-    form.appendChild(inputEmail);
-
-    // Book now button
-    var bookNowBtn = document.createElement('button');
-    bookNowBtn.innerText = 'Book Now';
-    bookNowBtn.style.marginTop = '20px';
-    bookNowBtn.onclick = function(e) {
-      e.preventDefault();
-      const email = inputEmail.value;
-      if (!email) {
-        alert('Please enter your email.');
-        return;
-      }
-
-      // Submit the booking with email
-      fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ size, condition, dateTime, address, email })
-      })
-      .then(response => response.json())
-      .then(data => {
-        modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
-      })
-      .catch(error => console.error('Error submitting booking:', error));
-    };
-
-    form.appendChild(bookNowBtn);
-    modal.appendChild(form);
   }
 })();
