@@ -1,27 +1,13 @@
 (function() {
-  window.addEventListener('DOMContentLoaded', function() {
-    var openBtn = document.createElement('button');
-    openBtn.innerText = 'Get an Instant Quote';
-    openBtn.style.marginLeft = '10px';
-    openBtn.style.padding = '10px 20px';
-    openBtn.style.backgroundColor = '#007bff';
-    openBtn.style.color = '#fff';
-    openBtn.style.border = 'none';
-    openBtn.style.cursor = 'pointer';
-
-    var paragraph = document.querySelector('p');
-    if (paragraph) {
-        paragraph.appendChild(openBtn);
-    } else {
-        console.error('Paragraph element not found.');
-    }
-    // Append the button to a known container
-    var container = document.querySelector('p'); // Replace with an existing container if needed
-    if (!container) {
-        console.error('Container element not found.');
-        return;
-    }
-    container.appendChild(openBtn);
+  // Create the button to open the modal
+  var openBtn = document.createElement('button');
+  openBtn.innerText = 'Get an Instant Quote';
+  openBtn.style.marginLeft = '10px';
+  openBtn.style.padding = '10px 20px';
+  openBtn.style.backgroundColor = '#007bff';
+  openBtn.style.color = '#fff';
+  openBtn.style.border = 'none';
+  openBtn.style.cursor = 'pointer';
 
   // Append the button next to the paragraph
   var paragraph = document.querySelector('p');
@@ -119,83 +105,95 @@
     selectTime.appendChild(option);
   });
 
-  // Add address fields to the form
-  var labelCustomerAddress = document.createElement('label');
-  labelCustomerAddress.innerText = 'Customer Address:';
-  var inputCustomerAddress = document.createElement('input');
-  inputCustomerAddress.type = 'text';
-  inputCustomerAddress.style.display = 'block';
-  inputCustomerAddress.style.marginTop = '10px';
-
-  var labelBusinessAddress = document.createElement('label');
-  labelBusinessAddress.innerText = 'Business Address:';
-  var inputBusinessAddress = document.createElement('input');
-  inputBusinessAddress.type = 'text';
-  inputBusinessAddress.style.display = 'block';
-  inputBusinessAddress.style.marginTop = '10px';
-
   form.appendChild(labelSize);
   form.appendChild(selectSize);
   form.appendChild(labelCondition);
   form.appendChild(selectCondition);
   form.appendChild(labelTime);
   form.appendChild(selectTime);
-  form.appendChild(labelCustomerAddress);
-  form.appendChild(inputCustomerAddress);
-  form.appendChild(labelBusinessAddress);
-  form.appendChild(inputBusinessAddress);
 
-
-  // Submit button
+  // Submit button for fetching the quote
   var submitBtn = document.createElement('button');
   submitBtn.innerText = 'Get Quote';
   submitBtn.style.marginTop = '20px';
+  form.appendChild(submitBtn);
+  modal.appendChild(form);
 
-  // Update submit button click handler to include addresses
-submitBtn.onclick = function(e) {
-  e.preventDefault();
+  // Add logic to "Get Quote" button
+  submitBtn.onclick = function(e) {
+    e.preventDefault();
 
-  const size = selectSize.value;
-  const condition = selectCondition.value;
-  const time = selectTime.value;
-  const customerAddress = inputCustomerAddress.value;
-  const businessAddress = inputBusinessAddress.value;
+    const size = selectSize.value;
+    const condition = selectCondition.value;
+    const time = selectTime.value;
 
-  if (!size || !condition || !time || !customerAddress || !businessAddress) {
-      alert('Please complete all fields.');
-      return;
-  }
+    if (!size || !condition || !time) {
+        alert('Please select all fields.');
+        return;
+    }
 
-  // Send data to backend, including addresses for distance calculation
-  fetch('https://insta-quote-tool-production.up.railway.app/get-quote', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ size, condition, customerAddress, businessAddress })
-  })
-  .then(response => response.json())
-  .then(data => {
-    modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p><p>Selected time slot: ${time}</p>`;
+    // Send data to the backend to calculate the quote
+    fetch('https://insta-quote-tool-production.up.railway.app/get-quote', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ size: size, condition: condition })
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Show the fetched quote and "Continue to Booking" button
+      modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p><p>Selected time slot: ${time}</p>`;
 
-      const bookNowBtn = document.createElement('button');
-      bookNowBtn.innerText = 'Book Now';
-      bookNowBtn.onclick = function() {
-        // Submit the booking
-        fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ size, condition, time })
-        })
-        .then(response => response.json())
-        .then(data => {
-          modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
-        })
-        .catch(error => console.error('Error submitting booking:', error));
+      const continueBtn = document.createElement('button');
+      continueBtn.innerText = 'Continue to Booking';
+
+      // When clicking "Continue to Booking"
+      continueBtn.onclick = function() {
+        modal.innerHTML = '';  // Clear the modal content
+
+        // Email intake form
+        var labelEmail = document.createElement('label');
+        labelEmail.innerText = 'Enter Email:';
+        var inputEmail = document.createElement('input');
+        inputEmail.type = 'email';
+        inputEmail.style.display = 'block';
+        inputEmail.style.marginTop = '10px';
+
+        var bookNowBtn = document.createElement('button');
+        bookNowBtn.innerText = 'Book Now';
+        bookNowBtn.style.marginTop = '20px';
+
+        // Booking submission logic after taking email
+        bookNowBtn.onclick = function() {
+          const email = inputEmail.value;
+
+          if (!email) {
+            alert('Please enter your email.');
+            return;
+          }
+
+          // Submit the booking with email
+          fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ size, condition, time, email })
+          })
+          .then(response => response.json())
+          .then(data => {
+            modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
+          })
+          .catch(error => console.error('Error submitting booking:', error));
+        };
+
+        modal.appendChild(labelEmail);
+        modal.appendChild(inputEmail);
+        modal.appendChild(bookNowBtn);
       };
-      modal.appendChild(bookNowBtn);
+
+      modal.appendChild(continueBtn);
 
       const closeQuoteBtn = document.createElement('button');
       closeQuoteBtn.innerText = 'Close';
@@ -206,11 +204,6 @@ submitBtn.onclick = function(e) {
       modal.appendChild(closeQuoteBtn);
     })
     .catch(error => console.error('Error:', error));
-};
+  };
 
-
-
-  form.appendChild(submitBtn);
-  modal.appendChild(form);
 })();
-});
