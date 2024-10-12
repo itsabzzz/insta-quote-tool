@@ -139,38 +139,14 @@
     modal.innerHTML = '';
     modal.appendChild(closeBtn);
 
-    // Customer address input
-    var labelAddress = document.createElement('label');
-    labelAddress.innerText = 'Enter Your Address:';
-    var inputAddress = document.createElement('input');
-    inputAddress.type = 'text';
-    inputAddress.style.display = 'block';
-    inputAddress.style.marginTop = '10px';
-    inputAddress.style.width = '100%';
-
-    var nextBtn = document.createElement('button');
-    nextBtn.innerText = 'Next';
-    nextBtn.style.marginTop = '20px';
-
-    nextBtn.onclick = function(e) {
-      e.preventDefault();
-      const address = inputAddress.value;
-
-      if (!address) {
-        alert('Please enter your address.');
-        return;
-      }
-      renderThirdScreen(size, condition, service, address);
-    };
-
-    modal.appendChild(labelAddress);
-    modal.appendChild(inputAddress);
-    modal.appendChild(nextBtn);
-  }
-
-  function renderThirdScreen(size, condition, service, address) {
-    modal.innerHTML = '';
-    modal.appendChild(closeBtn);
+    // Date input
+    var labelDate = document.createElement('label');
+    labelDate.innerText = 'Select Date:';
+    var inputDate = document.createElement('input');
+    inputDate.type = 'date';
+    inputDate.style.display = 'block';
+    inputDate.style.marginTop = '10px';
+    inputDate.style.width = '100%';
 
     // Time slot dropdown
     var labelTime = document.createElement('label');
@@ -198,98 +174,107 @@
       selectUpsell.appendChild(option);
     });
 
-    var getQuoteBtn = document.createElement('button');
-    getQuoteBtn.innerText = 'Get Quote';
-    getQuoteBtn.style.marginTop = '20px';
+    var nextBtn = document.createElement('button');
+    nextBtn.innerText = 'Get Quote';
+    nextBtn.style.marginTop = '20px';
 
-    getQuoteBtn.onclick = function(e) {
+    nextBtn.onclick = function(e) {
       e.preventDefault();
+      const date = inputDate.value;
       const time = selectTime.value;
       const upsell = selectUpsell.value;
 
-      if (!time) {
-        alert('Please select a time slot.');
+      if (!date || !time) {
+        alert('Please select a date and time slot.');
         return;
       }
-
-      // Send data to the backend to calculate the quote
-      fetch('https://insta-quote-tool-production.up.railway.app/get-quote', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ size, condition, service, address, time, upsell })
-      })
-      .then(response => response.json())
-      .then(data => {
-        // Show the fetched quote and "Continue to Booking" button
-        modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p><p>Selected time slot: ${time}</p>`;
-
-        const continueBtn = document.createElement('button');
-        continueBtn.innerText = 'Continue to Booking';
-
-        // When clicking "Continue to Booking"
-        continueBtn.onclick = function() {
-          modal.innerHTML = '';  // Clear the modal content
-
-          // Email intake form
-          var labelEmail = document.createElement('label');
-          labelEmail.innerText = 'Enter Email:';
-          var inputEmail = document.createElement('input');
-          inputEmail.type = 'email';
-          inputEmail.style.display = 'block';
-          inputEmail.style.marginTop = '10px';
-
-          var bookNowBtn = document.createElement('button');
-          bookNowBtn.innerText = 'Book Now';
-          bookNowBtn.style.marginTop = '20px';
-
-          // Booking submission logic after taking email
-          bookNowBtn.onclick = function() {
-            const email = inputEmail.value;
-
-            if (!email) {
-              alert('Please enter your email.');
-              return;
-            }
-
-            // Submit the booking with email
-            fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ size, condition, service, address, time, email, upsell })
-            })
-            .then(response => response.json())
-            .then(data => {
-              modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
-            })
-            .catch(error => console.error('Error submitting booking:', error));
-          };
-
-          modal.appendChild(labelEmail);
-          modal.appendChild(inputEmail);
-          modal.appendChild(bookNowBtn);
-        };
-
-        modal.appendChild(continueBtn);
-
-        const closeQuoteBtn = document.createElement('button');
-        closeQuoteBtn.innerText = 'Close';
-        closeQuoteBtn.onclick = function() {
-          modal.style.display = 'none';
-          overlay.style.display = 'none';
-        };
-        modal.appendChild(closeQuoteBtn);
-      })
-      .catch(error => console.error('Error:', error));
+      renderQuoteScreen(size, condition, service, date, time, upsell);
     };
 
+    modal.appendChild(labelDate);
+    modal.appendChild(inputDate);
     modal.appendChild(labelTime);
     modal.appendChild(selectTime);
     modal.appendChild(labelUpsell);
     modal.appendChild(selectUpsell);
-    modal.appendChild(getQuoteBtn);
+    modal.appendChild(nextBtn);
+  }
+
+  function renderQuoteScreen(size, condition, service, date, time, upsell) {
+    modal.innerHTML = '';
+    modal.appendChild(closeBtn);
+
+    // Send data to the backend to calculate the quote
+    fetch('https://insta-quote-tool-production.up.railway.app/get-quote', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ size, condition, service, date, time, upsell })
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Show the fetched quote and "Continue to Booking" button
+      modal.innerHTML = `<h2>Your Quote</h2><p>Your estimated quote is: $${data.price}</p><p>Selected date: ${date}</p><p>Selected time slot: ${time}</p>`;
+
+      const continueBtn = document.createElement('button');
+      continueBtn.innerText = 'Continue to Booking';
+
+      // When clicking "Continue to Booking"
+      continueBtn.onclick = function() {
+        modal.innerHTML = '';  // Clear the modal content
+
+        // Email intake form
+        var labelEmail = document.createElement('label');
+        labelEmail.innerText = 'Enter Email:';
+        var inputEmail = document.createElement('input');
+        inputEmail.type = 'email';
+        inputEmail.style.display = 'block';
+        inputEmail.style.marginTop = '10px';
+
+        var bookNowBtn = document.createElement('button');
+        bookNowBtn.innerText = 'Book Now';
+        bookNowBtn.style.marginTop = '20px';
+
+        // Booking submission logic after taking email
+        bookNowBtn.onclick = function() {
+          const email = inputEmail.value;
+
+          if (!email) {
+            alert('Please enter your email.');
+            return;
+          }
+
+          // Submit the booking with email
+          fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ size, condition, service, date, time, email, upsell })
+          })
+          .then(response => response.json())
+          .then(data => {
+            modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
+          })
+          .catch(error => console.error('Error submitting booking:', error));
+        };
+
+        modal.appendChild(labelEmail);
+        modal.appendChild(inputEmail);
+        modal.appendChild(bookNowBtn);
+      };
+
+      modal.appendChild(continueBtn);
+
+      const closeQuoteBtn = document.createElement('button');
+      closeQuoteBtn.innerText = 'Close';
+      closeQuoteBtn.onclick = function() {
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
+      };
+      modal.appendChild(closeQuoteBtn);
+    })
+    .catch(error => console.error('Error:', error));
   }
 })();
