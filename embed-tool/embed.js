@@ -139,9 +139,9 @@
   function showScreenTwo(size, condition, service) {
     modal.innerHTML = '';
     modal.appendChild(closeBtn);
-
+  
     var form = document.createElement('form');
-
+  
     // Booking date input
     var labelDate = document.createElement('label');
     labelDate.innerText = 'Select Booking Date and Time:';
@@ -149,7 +149,7 @@
     inputDate.type = 'datetime-local';
     inputDate.style.display = 'block';
     inputDate.style.marginTop = '10px';
-
+  
     // Customer postcode input with auto-complete for address
     var labelAddress = document.createElement('label');
     labelAddress.innerText = 'Enter Your Postcode:';
@@ -158,16 +158,17 @@
     inputPostcode.style.display = 'block';
     inputPostcode.style.marginTop = '10px';
     inputPostcode.placeholder = 'Start typing your postcode...';
-
+  
     // Dropdown for address suggestions
     var addressDropdown = document.createElement('select');
     addressDropdown.style.display = 'block';
     addressDropdown.style.marginTop = '10px';
     addressDropdown.style.width = '100%';
-
-    inputAddress.oninput = function() {
-      if (inputAddress.value.length >= 3) {
-        fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${inputAddress.value}&key=AIzaSyDAxDhDK9WMGquMQp-1SIZdmosZbot1N0Q`)
+  
+    // Corrected: using inputPostcode instead of inputAddress
+    inputPostcode.oninput = function() {
+      if (inputPostcode.value.length >= 3) {
+        fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${inputPostcode.value}&key=AIzaSyBCc4wVHYXW7jzHKniRDNWl45o0JsePWIE`)
           .then(response => response.json())
           .then(data => {
             addressDropdown.innerHTML = '';
@@ -181,13 +182,13 @@
           .catch(error => console.error('Error fetching address suggestions:', error));
       }
     };
-
+  
     form.appendChild(labelDate);
     form.appendChild(inputDate);
     form.appendChild(labelAddress);
     form.appendChild(inputPostcode);
     form.appendChild(addressDropdown);
-
+  
     // Next button
     var nextBtn = document.createElement('button');
     nextBtn.innerText = 'Next';
@@ -200,11 +201,11 @@
         alert('Please fill in all fields.');
       }
     };
-
+  
     form.appendChild(nextBtn);
     modal.appendChild(form);
   }
-
+  
   // Screen Three: Quote Result and Booking
   function showScreenThree(size, condition, service, dateTime, address) {
     modal.innerHTML = '';
