@@ -1,76 +1,78 @@
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
 const app = express();
 const port = 5000;
-const axios = require('axios');
 
-
-// Define specific CORS options if needed
+// CORS options
 const corsOptions = {
-  origin: '*', // For development: allow all origins. Change to specific domains in production.
+  origin: '*', // Adjust this to specific origins for production
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type']
 };
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// Google Places autocomplete proxy endpoint
+const googleApiKey = 'AIzaSyBCc4wVHYXW7jzHKniRDNWl45o0JsePWIE';
+
+// Proxy endpoint for Google Places autocomplete
 app.get('/api/places', async (req, res) => {
   const { input } = req.query;
-  const apiKey = 'AIzaSyBCc4wVHYXW7jzHKniRDNWl45o0JsePWIE';
 
   try {
-    const response = await axios.get(
-      `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
-      {
-        params: { input, key: apiKey },
-      }
-    );
+    const response = await axios.get(`https://maps.googleapis.com/maps/api/place/autocomplete/json`, {
+      params: {
+        input,
+        key: googleApiKey,
+      },
+    });
     res.json(response.data);
   } catch (error) {
+    console.error('Error fetching address suggestions:', error.message);
     res.status(500).json({ error: 'Error fetching address suggestions' });
   }
 });
 
-// POST route to handle quotes
+// Endpoint for calculating quote based on car size and condition
 app.post('/get-quote', (req, res) => {
   const { size, condition } = req.body;
   let price = 0;
 
-  // Example logic for calculating price
   if (size === 'small') price = 50;
   if (size === 'medium') price = 100;
   if (size === 'large') price = 150;
 
   if (condition === 'dirty') price += 20;
 
-  res.status(200).json({ price }); // Send back JSON response
+  res.status(200).json({ price });
 });
 
+// Booking submission endpoint
 app.post('/submit-booking', (req, res) => {
   const { size, condition, time } = req.body;
 
-  // For simplicity, let's log the booking to the console or save it to a database (this will be part of the future feature)
   console.log(`Booking received: ${size} car, ${condition} condition, at ${time}.`);
-  
-  // Respond with a success message
   res.status(200).json({ message: 'Booking submitted successfully!' });
 });
 
-
-// Add the route to get a distance-based quote
+// Calculate distance and return it
 app.post('/get-distance', async (req, res) => {
   const { address } = req.body;
-  const businessAddress = '28 Greenside Chase, Bury, BL9 9EG'; // Replace with actual business address
+  const businessAddress = '28 Greenside Chase, Bury, BL9 9EG';
+
   try {
-    const response = await fetch(`https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(address)}&destinations=${encodeURIComponent(businessAddress)}&key=AIzaSyBCc4wVHYXW7jzHKniRDNWl45o0JsePWIE`);
-    const data = await response.json();
-    const distance = data.rows[0].elements[0].distance.text;
-    
+    const response = await axios.get(`https://maps.googleapis.com/maps/api/distancematrix/json`, {
+      params: {
+        origins: address,
+        destinations: businessAddress,
+        key: googleApiKey,
+      },
+    });
+    const distance = response.data.rows[0].elements[0].distance.text;
     res.json({ distance });
   } catch (error) {
-    console.error('Error calculating distance:', error);
+    console.error('Error calculating distance:', error.message);
     res.status(500).json({ error: 'Failed to calculate distance' });
   }
 });
@@ -78,4 +80,3 @@ app.post('/get-distance', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
-
