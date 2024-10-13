@@ -150,28 +150,43 @@
     inputDate.style.display = 'block';
     inputDate.style.marginTop = '10px';
 
-    // Customer address input with postcode auto-complete
+    // Customer postcode input with auto-complete for address
     var labelAddress = document.createElement('label');
-    labelAddress.innerText = 'Enter Your Address:';
-    var inputAddress = document.createElement('input');
-    inputAddress.type = 'text';
-    inputAddress.style.display = 'block';
-    inputAddress.style.marginTop = '10px';
-    inputAddress.placeholder = 'Enter your postcode...';
+    labelAddress.innerText = 'Enter Your Postcode:';
+    var inputPostcode = document.createElement('input');
+    inputPostcode.type = 'text';
+    inputPostcode.style.display = 'block';
+    inputPostcode.style.marginTop = '10px';
+    inputPostcode.placeholder = 'Start typing your postcode...';
 
-    // Placeholder for a function to handle address auto-complete
-    inputAddress.oninput = function() {
-      if (inputAddress.value.length >= 3) {
-        // Simulate an API call for address lookup
-        console.log('Fetching address suggestions for:', inputAddress.value);
-        // Example: Show suggestions below input (this could be a dropdown list populated with results)
+    // Dropdown for address suggestions
+    var addressDropdown = document.createElement('select');
+    addressDropdown.style.display = 'block';
+    addressDropdown.style.marginTop = '10px';
+    addressDropdown.style.width = '100%';
+
+    inputPostcode.oninput = function() {
+      if (inputPostcode.value.length >= 3) {
+        fetch(`https://api.example.com/addresses?postcode=${inputPostcode.value}`)
+          .then(response => response.json())
+          .then(addresses => {
+            addressDropdown.innerHTML = '';
+            addresses.forEach(address => {
+              var option = document.createElement('option');
+              option.value = address;
+              option.text = address;
+              addressDropdown.appendChild(option);
+            });
+          })
+          .catch(error => console.error('Error fetching addresses:', error));
       }
     };
 
     form.appendChild(labelDate);
     form.appendChild(inputDate);
     form.appendChild(labelAddress);
-    form.appendChild(inputAddress);
+    form.appendChild(inputPostcode);
+    form.appendChild(addressDropdown);
 
     // Next button
     var nextBtn = document.createElement('button');
@@ -179,8 +194,8 @@
     nextBtn.style.marginTop = '20px';
     nextBtn.onclick = function(e) {
       e.preventDefault();
-      if (inputDate.value && inputAddress.value) {
-        showScreenThree(size, condition, service, inputDate.value, inputAddress.value);
+      if (inputDate.value && addressDropdown.value) {
+        showScreenThree(size, condition, service, inputDate.value, addressDropdown.value);
       } else {
         alert('Please fill in all fields.');
       }
