@@ -12,8 +12,26 @@ const corsOptions = {
   allowedHeaders: ['Content-Type']
 };
 
-app.use(express.json()); // To parse JSON bodies
-app.use(cors(corsOptions)); // Enable CORS with specific options
+app.use(cors());
+app.use(express.json());
+
+// Google Places autocomplete proxy endpoint
+app.get('/api/places', async (req, res) => {
+  const { input } = req.query;
+  const apiKey = 'AIzaSyBCc4wVHYXW7jzHKniRDNWl45o0JsePWIE';
+
+  try {
+    const response = await axios.get(
+      `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
+      {
+        params: { input, key: apiKey },
+      }
+    );
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching address suggestions' });
+  }
+});
 
 // POST route to handle quotes
 app.post('/get-quote', (req, res) => {

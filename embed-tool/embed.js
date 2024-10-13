@@ -168,7 +168,7 @@
     // Corrected: using inputPostcode instead of inputAddress
     inputPostcode.oninput = function() {
       if (inputPostcode.value.length >= 3) {
-        fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${inputPostcode.value}&key=AIzaSyBCc4wVHYXW7jzHKniRDNWl45o0JsePWIE`)
+        fetch(`https://insta-quote-tool-production.up.railway.app/api/places?input=${inputPostcode.value}&key=AIzaSyBCc4wVHYXW7jzHKniRDNWl45o0JsePWIE`)
           .then(response => response.json())
           .then(data => {
             addressDropdown.innerHTML = '';
