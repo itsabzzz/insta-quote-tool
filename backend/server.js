@@ -42,31 +42,22 @@ app.post('/submit-booking', (req, res) => {
 
 
 // Add the route to get a distance-based quote
-app.post('/get-distance-quote', async (req, res) => {
-  const { businessAddress, customerAddress, baseQuote } = req.body;
-  const apiKey = process.env.GOOGLE_API_KEY; // Store this securely
-
+app.post('/get-distance', async (req, res) => {
+  const { address } = req.body;
+  const businessAddress = '28 Greenside Chase, Bury, BL9 9EG'; // Replace with actual business address
   try {
-    const response = await axios.get(`https://maps.googleapis.com/maps/api/distancematrix/json`, {
-      params: {
-        origins: businessAddress,
-        destinations: customerAddress,
-        key: apiKey
-      }
-    });
-
-    const distanceInKm = response.data.rows[0].elements[0].distance.value / 1000;
-    const travelCost = distanceInKm * 0.5; // Example rate per km
-    const finalQuote = baseQuote + travelCost;
-
-    res.json({ quote: finalQuote, distance: distanceInKm });
-
+    const response = await fetch(`https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(address)}&destinations=${encodeURIComponent(businessAddress)}&key=AIzaSyBCc4wVHYXW7jzHKniRDNWl45o0JsePWIE`);
+    const data = await response.json();
+    const distance = data.rows[0].elements[0].distance.text;
+    
+    res.json({ distance });
   } catch (error) {
-    console.error('Error fetching distance:', error);
-    res.status(500).json({ message: 'Error calculating distance' });
+    console.error('Error calculating distance:', error);
+    res.status(500).json({ error: 'Failed to calculate distance' });
   }
 });
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+

@@ -165,20 +165,20 @@
     addressDropdown.style.marginTop = '10px';
     addressDropdown.style.width = '100%';
 
-    inputPostcode.oninput = function() {
-      if (inputPostcode.value.length >= 3) {
-        fetch(`https://api.example.com/addresses?postcode=${inputPostcode.value}`)
+    inputAddress.oninput = function() {
+      if (inputAddress.value.length >= 3) {
+        fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${inputAddress.value}&key=AIzaSyDAxDhDK9WMGquMQp-1SIZdmosZbot1N0Q`)
           .then(response => response.json())
-          .then(addresses => {
+          .then(data => {
             addressDropdown.innerHTML = '';
-            addresses.forEach(address => {
+            data.predictions.forEach(prediction => {
               var option = document.createElement('option');
-              option.value = address;
-              option.text = address;
+              option.value = prediction.description;
+              option.text = prediction.description;
               addressDropdown.appendChild(option);
             });
           })
-          .catch(error => console.error('Error fetching addresses:', error));
+          .catch(error => console.error('Error fetching address suggestions:', error));
       }
     };
 
