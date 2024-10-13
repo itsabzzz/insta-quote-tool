@@ -65,7 +65,7 @@
     showScreenOne();
   };
 
-  // Screen One: Car Size, Condition, and Service
+  // Screen One: Car Size, Condition, Service, and Booking Date
   function showScreenOne() {
     modal.innerHTML = '';
     modal.appendChild(closeBtn);
@@ -159,10 +159,13 @@
     inputAddress.style.marginTop = '10px';
     inputAddress.placeholder = 'Enter your postcode...';
 
-    // Assuming we have a function to handle address auto-complete
+    // Placeholder for a function to handle address auto-complete
     inputAddress.oninput = function() {
-      // Placeholder for address lookup functionality
-      console.log('Auto-complete suggestions for:', inputAddress.value);
+      if (inputAddress.value.length >= 3) {
+        // Simulate an API call for address lookup
+        console.log('Fetching address suggestions for:', inputAddress.value);
+        // Example: Show suggestions below input (this could be a dropdown list populated with results)
+      }
     };
 
     form.appendChild(labelDate);
