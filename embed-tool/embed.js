@@ -25,21 +25,24 @@
   overlay.style.zIndex = '999';
   document.body.appendChild(overlay);
 
-  // Create the modal
-  var modal = document.createElement('div');
-  modal.style.position = 'fixed';
-  modal.style.top = '50%';
-  modal.style.left = '50%';
-  modal.style.transform = 'translate(-50%, -50%)';
-  modal.style.width = '90%';
-  modal.style.maxWidth = '500px';
-  modal.style.backgroundColor = '#fff';
-  modal.style.padding = '20px';
-  modal.style.borderRadius = '10px';
-  modal.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
-  modal.style.zIndex = '1001';
-  modal.style.display = 'none';
-  document.body.appendChild(modal);
+// Create the modal
+var modal = document.createElement('div');
+modal.style.position = 'fixed';
+modal.style.top = '50%';
+modal.style.left = '50%';
+modal.style.transform = 'translate(-50%, -50%)';
+modal.style.width = '90%';
+modal.style.maxWidth = '500px';
+modal.style.height = '400px'; // Set a fixed height for consistent size
+modal.style.overflowY = 'auto'; // Allows scrolling if content overflows
+modal.style.backgroundColor = '#fff';
+modal.style.padding = '20px';
+modal.style.borderRadius = '10px';
+modal.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+modal.style.zIndex = '1001';
+modal.style.display = 'none';
+document.body.appendChild(modal);
+
 
   // Create close button for the modal
   var closeBtn = document.createElement('button');
@@ -136,88 +139,91 @@
   }
 
   // Screen Two: Booking Date and Address
-  function showScreenTwo(size, condition, service) {
-    modal.innerHTML = '';
-    modal.appendChild(closeBtn);
-  
-    var form = document.createElement('form');
-  
-    // Booking date input
-    var labelDate = document.createElement('label');
-    labelDate.innerText = 'Select Booking Date and Time:';
-    var inputDate = document.createElement('input');
-    inputDate.type = 'datetime-local';
-    inputDate.style.display = 'block';
-    inputDate.style.marginTop = '10px';
-  
-    // Customer house number input
-    var labelHouseNumber = document.createElement('label');
-    labelHouseNumber.innerText = 'Enter House Number/Name:';
-    var inputHouseNumber = document.createElement('input');
-    inputHouseNumber.type = 'text';
-    inputHouseNumber.placeholder = 'House number/name';
-    inputHouseNumber.style.width = '30%';
-    inputHouseNumber.style.marginRight = '10px';
-  
-    // Customer postcode input with auto-complete for address
-    var labelAddress = document.createElement('label');
-    labelAddress.innerText = 'Enter Your Postcode:';
-    var inputPostcode = document.createElement('input');
-    inputPostcode.type = 'text';
-    inputPostcode.style.display = 'inline-block';
-    inputPostcode.style.width = '60%';
-    inputPostcode.style.marginTop = '10px';
-    inputPostcode.placeholder = 'Start typing your postcode...';
-  
-    // Dropdown for address suggestions
-    var addressDropdown = document.createElement('select');
-    addressDropdown.style.display = 'block';
-    addressDropdown.style.marginTop = '10px';
-    addressDropdown.style.width = '100%';
-  
-    // Fetch address suggestions
-    inputPostcode.oninput = function() {
-      if (inputPostcode.value.length >= 3) {
-        fetch(`https://insta-quote-tool-production.up.railway.app/api/places?input=${inputPostcode.value}`)
-          .then(response => response.json())
-          .then(data => {
-            addressDropdown.innerHTML = '';
-            data.predictions.forEach(prediction => {
-              var option = document.createElement('option');
-              option.value = prediction.description;
-              option.text = prediction.description;
-              addressDropdown.appendChild(option);
-            });
-          })
-          .catch(error => console.error('Error fetching address suggestions:', error));
-      }
-    };
-  
-    form.appendChild(labelDate);
-    form.appendChild(inputDate);
-    form.appendChild(labelHouseNumber);
-    form.appendChild(inputHouseNumber);
-    form.appendChild(labelAddress);
-    form.appendChild(inputPostcode);
-    form.appendChild(addressDropdown);
-  
-    // Next button
-    var nextBtn = document.createElement('button');
-    nextBtn.innerText = 'Next';
-    nextBtn.style.marginTop = '20px';
-    nextBtn.onclick = function(e) {
-      e.preventDefault();
-      if (inputDate.value && inputHouseNumber.value && addressDropdown.value) {
-        var fullAddress = `${inputHouseNumber.value}, ${addressDropdown.value}`;
-        showScreenThree(size, condition, service, inputDate.value, fullAddress);
-      } else {
-        alert('Please fill in all fields.');
-      }
-    };
-  
-    form.appendChild(nextBtn);
-    modal.appendChild(form);
-  }
+// Screen Two: Booking Date and Address
+function showScreenTwo(size, condition, service) {
+  modal.innerHTML = '';
+  modal.appendChild(closeBtn);
+
+  var form = document.createElement('form');
+
+  // Booking date input
+  var labelDate = document.createElement('label');
+  labelDate.innerText = 'Select Booking Date and Time:';
+  var inputDate = document.createElement('input');
+  inputDate.type = 'datetime-local';
+  inputDate.style.display = 'block';
+  inputDate.style.marginTop = '10px';
+
+  // Customer postcode input with auto-complete for address
+  var labelAddress = document.createElement('label');
+  labelAddress.innerText = 'Enter Your Postcode:';
+  var inputPostcode = document.createElement('input');
+  inputPostcode.type = 'text';
+  inputPostcode.style.display = 'inline-block';
+  inputPostcode.style.width = '60%';
+  inputPostcode.style.marginTop = '10px';
+  inputPostcode.placeholder = 'Start typing your postcode...';
+
+  // Dropdown for address suggestions
+  var addressDropdown = document.createElement('select');
+  addressDropdown.style.display = 'block';
+  addressDropdown.style.marginTop = '10px';
+  addressDropdown.style.width = '100%';
+
+  // Customer house number input
+  var labelHouseNumber = document.createElement('label');
+  labelHouseNumber.innerText = 'Enter House Number/Name:';
+  var inputHouseNumber = document.createElement('input');
+  inputHouseNumber.type = 'text';
+  inputHouseNumber.placeholder = 'House number/name';
+  inputHouseNumber.style.display = 'block';
+  inputHouseNumber.style.width = '30%';
+  inputHouseNumber.style.marginTop = '10px';
+
+  // Fetch address suggestions
+  inputPostcode.oninput = function() {
+    if (inputPostcode.value.length >= 3) {
+      fetch(`https://insta-quote-tool-production.up.railway.app/api/places?input=${inputPostcode.value}`)
+        .then(response => response.json())
+        .then(data => {
+          addressDropdown.innerHTML = '';
+          data.predictions.forEach(prediction => {
+            var option = document.createElement('option');
+            option.value = prediction.description;
+            option.text = prediction.description;
+            addressDropdown.appendChild(option);
+          });
+        })
+        .catch(error => console.error('Error fetching address suggestions:', error));
+    }
+  };
+
+  form.appendChild(labelDate);
+  form.appendChild(inputDate);
+  form.appendChild(labelAddress);
+  form.appendChild(inputPostcode);
+  form.appendChild(addressDropdown);
+  form.appendChild(labelHouseNumber);
+  form.appendChild(inputHouseNumber);
+
+  // Next button
+  var nextBtn = document.createElement('button');
+  nextBtn.innerText = 'Next';
+  nextBtn.style.marginTop = '20px';
+  nextBtn.onclick = function(e) {
+    e.preventDefault();
+    if (inputDate.value && inputHouseNumber.value && addressDropdown.value) {
+      var fullAddress = `${inputHouseNumber.value}, ${addressDropdown.value}`;
+      showScreenThree(size, condition, service, inputDate.value, fullAddress);
+    } else {
+      alert('Please fill in all fields.');
+    }
+  };
+
+  form.appendChild(nextBtn);
+  modal.appendChild(form);
+}
+
   
 
 // Screen Three: Quote Result and Booking
