@@ -1,4 +1,6 @@
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
+  (function() {
+  
   // Create the button to open the modal
   var openBtn = document.createElement('button');
   openBtn.innerText = 'Get an Instant Quote';
@@ -317,3 +319,4 @@ function showScreenThree(size, condition, service, dateTime, address) {
 }
 
 })();
+});
