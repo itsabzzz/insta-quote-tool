@@ -58,13 +58,13 @@ app.post('/submit-booking', (req, res) => {
 
 // Calculate distance and return it
 app.post('/get-distance', async (req, res) => {
-  const { address } = req.body;
+  const { customerAddress } = req.body;
   const businessAddress = '28 Greenside Chase, Bury, BL9 9EG';
 
   try {
     const response = await axios.get(`https://maps.googleapis.com/maps/api/distancematrix/json`, {
       params: {
-        origins: address,
+        origins: customerAddress,
         destinations: businessAddress,
         key: googleApiKey,
       },
@@ -76,6 +76,7 @@ app.post('/get-distance', async (req, res) => {
     res.status(500).json({ error: 'Failed to calculate distance' });
   }
 });
+
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
