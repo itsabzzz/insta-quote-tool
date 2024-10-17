@@ -1,12 +1,38 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-const app = express();
-const port = 5000;
+const mongoose = require('mongoose');
+require('dotenv').config();
 
-// CORS options
+const app = express();
+const port = 5001;
+
+// Database Connection
+mongoose.connect(process.env.MONGO_URI, { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true 
+})
+  .then(() => console.log('Connected to MongoDB 🔥'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Define the Business Schema and Model
+const businessSchema = new mongoose.Schema({
+  name: String,
+  address: String,
+  services: [String],
+  pricing: {
+    small: Number,
+    medium: Number,
+    large: Number,
+    dirtySurcharge: Number
+  }
+}, { collection: 'business' });
+
+const Business = mongoose.model('Business', businessSchema);
+
+// CORS Options
 const corsOptions = {
-  origin: '*', // Adjust this to specific origins for production
+  origin: '*',
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type']
 };
@@ -14,18 +40,14 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-const googleApiKey = 'AIzaSyBCc4wVHYXW7jzHKniRDNWl45o0JsePWIE';
+const googleApiKey = process.env.GOOGLE_API_KEY;
 
-// Proxy endpoint for Google Places autocomplete
+// Google Places Autocomplete
 app.get('/api/places', async (req, res) => {
   const { input } = req.query;
-
   try {
     const response = await axios.get(`https://maps.googleapis.com/maps/api/place/autocomplete/json`, {
-      params: {
-        input,
-        key: googleApiKey,
-      },
+      params: { input, key: googleApiKey }
     });
     res.json(response.data);
   } catch (error) {
@@ -34,49 +56,51 @@ app.get('/api/places', async (req, res) => {
   }
 });
 
-// Endpoint for calculating quote based on car size and condition
+// Quote Calculation Endpoint
 app.post('/get-quote', (req, res) => {
   const { size, condition } = req.body;
-  let price = 0;
-
-  if (size === 'small') price = 50;
-  if (size === 'medium') price = 100;
-  if (size === 'large') price = 150;
-
+  let price = size === 'small' ? 50 : size === 'medium' ? 100 : 150;
   if (condition === 'dirty') price += 20;
 
   res.status(200).json({ price });
 });
 
-// Booking submission endpoint
+// Booking Submission Endpoint
 app.post('/submit-booking', (req, res) => {
   const { size, condition, time } = req.body;
-
   console.log(`Booking received: ${size} car, ${condition} condition, at ${time}.`);
   res.status(200).json({ message: 'Booking submitted successfully!' });
 });
 
-// Calculate distance and return it
+// Distance Calculation Endpoint
 app.post('/get-distance', async (req, res) => {
-  const { customerAddress } = req.body;
-  const businessAddress = '28 Greenside Chase, Bury, BL9 9EG';
+  const { customerAddress, businessId } = req.body;
 
   try {
+    const business = await Business.findById(businessId);
+    if (!business) {
+      return res.status(404).json({ error: 'Business not found' });
+    }
+
     const response = await axios.get(`https://maps.googleapis.com/maps/api/distancematrix/json`, {
       params: {
         origins: customerAddress,
-        destinations: businessAddress,
+        destinations: business.address,
         key: googleApiKey,
-      },
+      }
     });
-    const distance = response.data.rows[0].elements[0].distance.text;
-    res.json({ distance });
+
+    if (response.data.status === 'OK') {
+      const distance = response.data.rows[0].elements[0].distance.text;
+      res.json({ distance });
+    } else {
+      res.status(500).json({ error: 'Failed to calculate distance' });
+    }
   } catch (error) {
     console.error('Error calculating distance:', error.message);
     res.status(500).json({ error: 'Failed to calculate distance' });
   }
 });
-
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
