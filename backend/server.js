@@ -5,19 +5,17 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5001;
 
 console.log("Mongo URI:", process.env.MONGO_URI);
 console.log("Google API Key:", process.env.GOOGLE_API_KEY);
 
 
 // Database Connection
-mongoose.connect(process.env.MONGO_URI, { 
-  useNewUrlParser: true, 
-  useUnifiedTopology: true 
-})
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Connected to MongoDB 🔥'))
   .catch(err => console.error('MongoDB connection error:', err));
+
 
 // Define the Business Schema and Model
 const businessSchema = new mongoose.Schema({
@@ -106,6 +104,6 @@ app.post('/get-distance', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {  // Listen on 0.0.0.0 to ensure it binds properly on Railway
   console.log(`Server running on port ${port}`);
 });
