@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 5001;
+const port = process.env.PORT || 8080;  // Default to 8080 if PORT is not set
 
 console.log("Mongo URI:", process.env.MONGO_URI);
 console.log("Google API Key:", process.env.GOOGLE_API_KEY);
