@@ -7,6 +7,9 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5001;
 
+console.log("Mongo URI:", process.env.MONGO_URI);
+console.log("Google API Key:", process.env.GOOGLE_API_KEY);
+
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI, { 
