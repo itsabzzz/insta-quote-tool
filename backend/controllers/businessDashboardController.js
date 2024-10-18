@@ -73,10 +73,11 @@ exports.addService = async (req, res) => {
 
     res.status(201).json({ message: 'Service added successfully', services: business.services });
   } catch (error) {
-    console.error('Error adding service:', error);
+    console.error('Error adding service:', error);  // Add this for better debugging
     res.status(500).json({ error: 'Error adding service' });
   }
 };
+
 
 // Update a Service
 exports.updateService = async (req, res) => {
