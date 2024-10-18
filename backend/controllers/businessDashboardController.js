@@ -1,5 +1,6 @@
 // /backend/controllers/businessDashboardController.js
 const Booking = require('../models/Booking'); // Assuming you have a Booking model
+const Business = require('../models/Business'); // Import the Business model
 
 
 // Create Test Booking (Temporary)
