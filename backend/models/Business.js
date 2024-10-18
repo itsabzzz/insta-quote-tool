@@ -1,18 +1,24 @@
 // /backend/models/Business.js
 const mongoose = require('mongoose');
 
+const serviceSchema = new mongoose.Schema({
+  serviceName: String,
+  price: Number,
+  duration: Number, // Duration in minutes
+});
+
 const businessSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: String,
   address: String,
-  services: [String],
+  services: [serviceSchema], // Array of services
   pricing: {
     small: Number,
     medium: Number,
     large: Number,
-    dirtySurcharge: Number,
-    costPerMile: Number
+    dirtySurcharge: Number
   }
-});
+}, { collection: 'business' });
 
-// Check if the model already exists before compiling
-module.exports = mongoose.models.Business || mongoose.model('Business', businessSchema);
+const Business = mongoose.model('Business', businessSchema);
+module.exports = Business;
+

@@ -58,3 +58,81 @@ exports.cancelBooking = async (req, res) => {
     res.status(500).json({ error: 'Error canceling booking' });
   }
 };
+
+
+// Add a Service
+exports.addService = async (req, res) => {
+  const { businessId, serviceName, price, duration } = req.body;
+
+  try {
+    const business = await Business.findById(businessId);
+    if (!business) return res.status(404).json({ error: 'Business not found' });
+
+    business.services.push({ serviceName, price, duration });
+    await business.save();
+
+    res.status(201).json({ message: 'Service added successfully', services: business.services });
+  } catch (error) {
+    console.error('Error adding service:', error);
+    res.status(500).json({ error: 'Error adding service' });
+  }
+};
+
+// Update a Service
+exports.updateService = async (req, res) => {
+  const { businessId, serviceId, serviceName, price, duration } = req.body;
+
+  try {
+    const business = await Business.findById(businessId);
+    if (!business) return res.status(404).json({ error: 'Business not found' });
+
+    const service = business.services.id(serviceId);
+    if (!service) return res.status(404).json({ error: 'Service not found' });
+
+    service.serviceName = serviceName;
+    service.price = price;
+    service.duration = duration;
+    await business.save();
+
+    res.status(200).json({ message: 'Service updated successfully', services: business.services });
+  } catch (error) {
+    console.error('Error updating service:', error);
+    res.status(500).json({ error: 'Error updating service' });
+  }
+};
+
+// Delete a Service
+exports.deleteService = async (req, res) => {
+  const { businessId, serviceId } = req.body;
+
+  try {
+    const business = await Business.findById(businessId);
+    if (!business) return res.status(404).json({ error: 'Business not found' });
+
+    const service = business.services.id(serviceId);
+    if (!service) return res.status(404).json({ error: 'Service not found' });
+
+    service.remove();
+    await business.save();
+
+    res.status(200).json({ message: 'Service deleted successfully', services: business.services });
+  } catch (error) {
+    console.error('Error deleting service:', error);
+    res.status(500).json({ error: 'Error deleting service' });
+  }
+};
+
+// Get Services
+exports.getServices = async (req, res) => {
+  const { businessId } = req.query;
+
+  try {
+    const business = await Business.findById(businessId);
+    if (!business) return res.status(404).json({ error: 'Business not found' });
+
+    res.status(200).json({ services: business.services });
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    res.status(500).json({ error: 'Error fetching services' });
+  }
+};

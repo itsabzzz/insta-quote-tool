@@ -17,4 +17,23 @@ router.put('/booking/reschedule', authMiddleware, rescheduleBooking);
 // Cancel a booking
 router.delete('/booking/cancel', authMiddleware, cancelBooking);
 
+
+//__________________________________________________________________
+// Add Pricing and Services Routes
+const { addService, updateService, deleteService, getServices } = require('../controllers/businessDashboardController');
+
+// Route to add a service
+router.post('/service/add', authMiddleware, addService);
+
+// Route to update a service
+router.put('/service/update', authMiddleware, updateService);
+
+// Route to delete a service
+router.delete('/service/delete', authMiddleware, deleteService);
+
+// Route to get all services for a business
+router.get('/services', authMiddleware, getServices);
+
+
+
 module.exports = router;
