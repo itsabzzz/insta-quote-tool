@@ -32,6 +32,12 @@ const businessSchema = new mongoose.Schema({
 
 const Business = mongoose.model('Business', businessSchema);
 
+
+
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
+
 // CORS Options
 const corsOptions = {
   origin: '*',
