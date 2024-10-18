@@ -62,6 +62,7 @@ exports.cancelBooking = async (req, res) => {
 
 
 // Add a Service
+//______________________________________________________________________
 exports.addService = async (req, res) => {
   const { businessId, serviceName, price, duration } = req.body;
 
@@ -103,6 +104,7 @@ exports.updateService = async (req, res) => {
   }
 };
 
+
 // Delete a Service
 exports.deleteService = async (req, res) => {
   const { businessId, serviceId } = req.body;
@@ -111,11 +113,12 @@ exports.deleteService = async (req, res) => {
     const business = await Business.findById(businessId);
     if (!business) return res.status(404).json({ error: 'Business not found' });
 
+    // Pull the service from the array by its _id
     const service = business.services.id(serviceId);
     if (!service) return res.status(404).json({ error: 'Service not found' });
 
-    service.remove();
-    await business.save();
+    business.services.pull(serviceId);  // Use pull() to remove the service from the array
+    await business.save();  // Save the changes to the business document
 
     res.status(200).json({ message: 'Service deleted successfully', services: business.services });
   } catch (error) {
@@ -123,6 +126,7 @@ exports.deleteService = async (req, res) => {
     res.status(500).json({ error: 'Error deleting service' });
   }
 };
+
 
 // Get Services
 exports.getServices = async (req, res) => {
@@ -136,5 +140,81 @@ exports.getServices = async (req, res) => {
   } catch (error) {
     console.error('Error fetching services:', error);
     res.status(500).json({ error: 'Error fetching services' });
+  }
+};
+
+
+// Add Availability
+//_______________________________________________________________________________________________
+exports.addAvailability = async (req, res) => {
+  const { businessId, day, startTime, endTime } = req.body;
+
+  try {
+    const business = await Business.findById(businessId);
+    if (!business) return res.status(404).json({ error: 'Business not found' });
+
+    business.availability.push({ day, startTime, endTime });
+    await business.save();
+
+    res.status(201).json({ message: 'Availability added successfully', availability: business.availability });
+  } catch (error) {
+    console.error('Error adding availability:', error);
+    res.status(500).json({ error: 'Error adding availability' });
+  }
+};
+
+// Update Availability
+exports.updateAvailability = async (req, res) => {
+  const { businessId, availabilityId, day, startTime, endTime } = req.body;
+
+  try {
+    const business = await Business.findById(businessId);
+    if (!business) return res.status(404).json({ error: 'Business not found' });
+
+    const availability = business.availability.id(availabilityId);
+    if (!availability) return res.status(404).json({ error: 'Availability not found' });
+
+    availability.day = day;
+    availability.startTime = startTime;
+    availability.endTime = endTime;
+    await business.save();
+
+    res.status(200).json({ message: 'Availability updated successfully', availability: business.availability });
+  } catch (error) {
+    console.error('Error updating availability:', error);
+    res.status(500).json({ error: 'Error updating availability' });
+  }
+};
+
+// Delete Availability
+exports.deleteAvailability = async (req, res) => {
+  const { businessId, availabilityId } = req.body;
+
+  try {
+    const business = await Business.findById(businessId);
+    if (!business) return res.status(404).json({ error: 'Business not found' });
+
+    business.availability.pull(availabilityId);
+    await business.save();
+
+    res.status(200).json({ message: 'Availability deleted successfully', availability: business.availability });
+  } catch (error) {
+    console.error('Error deleting availability:', error);
+    res.status(500).json({ error: 'Error deleting availability' });
+  }
+};
+
+// Get Availability
+exports.getAvailability = async (req, res) => {
+  const { businessId } = req.query;
+
+  try {
+    const business = await Business.findById(businessId);
+    if (!business) return res.status(404).json({ error: 'Business not found' });
+
+    res.status(200).json({ availability: business.availability });
+  } catch (error) {
+    console.error('Error fetching availability:', error);
+    res.status(500).json({ error: 'Error fetching availability' });
   }
 };

@@ -50,4 +50,22 @@ router.get('/services', authMiddleware, getServices);
 
 
 
+//__________________________________________________________________
+// availabilty
+const { addAvailability, updateAvailability, deleteAvailability, getAvailability } = require('../controllers/businessDashboardController');
+
+// Route to add availability
+router.post('/availability/add', authMiddleware, addAvailability);
+
+// Route to update availability
+router.put('/availability/update', authMiddleware, updateAvailability);
+
+// Route to delete availability
+router.delete('/availability/delete', authMiddleware, deleteAvailability);
+
+// Route to get all availability for a business
+router.get('/availability', authMiddleware, getAvailability);
+
+
+
 module.exports = router;
