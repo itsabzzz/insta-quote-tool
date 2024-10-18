@@ -14,5 +14,5 @@ const businessSchema = new mongoose.Schema({
   }
 });
 
-const Business = mongoose.model('Business', businessSchema);
-module.exports = Business;
+// Check if the model already exists before compiling
+module.exports = mongoose.models.Business || mongoose.model('Business', businessSchema);

@@ -15,5 +15,5 @@ userSchema.pre('save', async function(next) {
   next();
 });
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+// Check if the model already exists before compiling
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);

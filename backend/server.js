@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const mongoose = require('mongoose');
+const authMiddleware = require('./middleware/authMiddleware');  // Import the middleware
 require('dotenv').config();
 
 const app = express();
@@ -10,6 +11,9 @@ const port = process.env.PORT || 8080;  // Default to 8080 if PORT is not set
 console.log("Mongo URI:", process.env.MONGO_URI);
 console.log("Google API Key:", process.env.GOOGLE_API_KEY);
 
+// Middleware
+app.use(cors());
+app.use(express.json());
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)
@@ -17,26 +21,14 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 
-// Define the Business Schema and Model
-const businessSchema = new mongoose.Schema({
-  name: String,
-  address: String,
-  services: [String],
-  pricing: {
-    small: Number,
-    medium: Number,
-    large: Number,
-    dirtySurcharge: Number
-  }
-}, { collection: 'business' });
-
-const Business = mongoose.model('Business', businessSchema);
-
-
-
+// Routes
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
+// Protected Route
+app.get('/api/protected-route', authMiddleware, (req, res) => {
+  res.json({ message: `Welcome! You are authenticated as user ${req.user.userId}` });
+});
 
 // CORS Options
 const corsOptions = {
@@ -45,8 +37,8 @@ const corsOptions = {
   allowedHeaders: ['Content-Type']
 };
 
-app.use(cors(corsOptions));
-app.use(express.json());
+//app.use(cors(corsOptions));
+//app.use(express.json());
 
 const googleApiKey = process.env.GOOGLE_API_KEY;
 
