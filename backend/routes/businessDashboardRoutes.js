@@ -24,6 +24,8 @@ router.post('/business/create', authMiddleware, async (req, res) => {
   });
   
   
+// Add the route for creating a booking
+router.post('/booking/create', authMiddleware, submitBooking);
 
 // Reschedule a booking
 router.put('/booking/reschedule', authMiddleware, rescheduleBooking);
