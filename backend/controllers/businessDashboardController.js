@@ -25,6 +25,52 @@ const Business = require('../models/Business'); // Import the Business model
 //    }
 //  };
 
+exports.submitBooking = async (req, res) => {
+  const { businessId, serviceId, size, condition, bookingTime } = req.body;
+
+  try {
+    const business = await Business.findById(businessId);
+    if (!business) return res.status(404).json({ error: 'Business not found' });
+
+    // Check if the requested time falls within business availability
+    const availableSlot = business.availability.find(slot => {
+      return (
+        slot.day === bookingTime.day &&
+        bookingTime.startTime >= slot.startTime &&
+        bookingTime.endTime <= slot.endTime
+      );
+    });
+
+    if (!availableSlot) {
+      return res.status(400).json({ error: 'Requested booking time is outside of business availability' });
+    }
+
+    // Check for overlapping bookings
+    const overlappingBooking = await Booking.findOne({
+      businessId,
+      'bookingTime.day': bookingTime.day,
+      $or: [
+        { 'bookingTime.startTime': { $lt: bookingTime.endTime, $gte: bookingTime.startTime } },
+        { 'bookingTime.endTime': { $gt: bookingTime.startTime, $lte: bookingTime.endTime } }
+      ]
+    });
+
+    if (overlappingBooking) {
+      return res.status(400).json({ error: 'There is already a booking at the requested time' });
+    }
+
+    // Proceed with booking if the time is available and not overlapping
+    const newBooking = new Booking({ businessId, serviceId, size, condition, bookingTime });
+    await newBooking.save();
+
+    res.status(201).json({ message: 'Booking created successfully', booking: newBooking });
+  } catch (error) {
+    console.error('Error submitting booking:', error);
+    res.status(500).json({ error: 'Error submitting booking' });
+  }
+};
+
+
 
 // Reschedule Booking
 exports.rescheduleBooking = async (req, res) => {
