@@ -1,5 +1,5 @@
 const express = require('express');
-const { rescheduleBooking, cancelBooking } = require('../controllers/businessDashboardController');
+const { submitBooking, rescheduleBooking, cancelBooking } = require('../controllers/businessDashboardController');
 const authMiddleware = require('../middleware/authMiddleware'); // Businesses need to be authenticated
 const router = express.Router();
 const Business = require('../models/Business');  // Add this line
