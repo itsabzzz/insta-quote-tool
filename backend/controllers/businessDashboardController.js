@@ -1,4 +1,7 @@
 // /backend/controllers/businessDashboardController.js
+const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const Booking = require('../models/Booking'); // Assuming you have a Booking model
 const Business = require('../models/Business'); // Import the Business model
 
@@ -26,6 +29,35 @@ const Business = require('../models/Business'); // Import the Business model
 //  };
 
 // /backend/controllers/businessDashboardController.js
+
+
+exports.businessLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+      const user = await User.findOne({ email });
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+          return res.status(401).json({ error: 'Invalid email or password' });
+      }
+
+      const token = jwt.sign({ userId: user._id, businessId: user.businessId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      res.json({ token, businessId: user.businessId });
+  } catch (error) {
+      console.error('Error during login:', error);
+      res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.getBusinessBookings = async (req, res) => {
+  try {
+      const bookings = await Booking.find({ businessId: req.user.businessId });
+      res.json(bookings);
+  } catch (error) {
+      console.error('Error fetching bookings:', error);
+      res.status(500).json({ error: 'Error fetching bookings' });
+  }
+};
+
 
 exports.submitBooking = async (req, res) => {
   const { businessId, serviceId, size, condition, bookingTime } = req.body;

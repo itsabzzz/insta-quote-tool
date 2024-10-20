@@ -1,5 +1,5 @@
 const express = require('express');
-const { submitBooking, rescheduleBooking, cancelBooking } = require('../controllers/businessDashboardController');
+const { submitBooking, rescheduleBooking, cancelBooking, businessLogin, getBusinessBookings } = require('../controllers/businessDashboardController');
 const authMiddleware = require('../middleware/authMiddleware'); // Businesses need to be authenticated
 const router = express.Router();
 const Business = require('../models/Business');  // Add this line
@@ -21,9 +21,13 @@ router.post('/business/create', authMiddleware, async (req, res) => {
       console.error('Error creating business:', error);  // This should give more details about the error
       res.status(500).json({ error: 'Error creating business' });
     }
-  });
-  
-  
+});
+router.post('/login', businessLogin);
+
+router.get('/bookings', authMiddleware, getBusinessBookings);
+
+
+
 // Add the route for creating a booking
 router.post('/booking/create', authMiddleware, submitBooking);
 
@@ -32,6 +36,8 @@ router.put('/booking/reschedule', authMiddleware, rescheduleBooking);
 
 // Cancel a booking
 router.delete('/booking/cancel', authMiddleware, cancelBooking);
+
+
 
 
 //__________________________________________________________________
