@@ -1,52 +1,65 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { useState } from 'react'; // Importing useState for modal control
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import DashboardLayout from './dashboard/DashboardLayout';
+import Bookings from './dashboard/Bookings';
+import Services from './dashboard/Services';
+import Availability from './dashboard/Availability';
+import Settings from './dashboard/Settings';
 import HomePage from './HomePage';
-import PreQuoteDetailsForm from './PreQuoteDetailsForm'; // Your existing form
-import QuotePage from './QuotePage';
-import BookingConfirmation from './BookingConfirmation';
-import Modal from './components/Modal'; // Import Modal component
-
+import Login from './components/Login';
+import Signup from './components/Signup';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
-  // State to handle the visibility of the modal
-  const [isModalVisible, setModalVisible] = useState(false);
-
-  const openModal = () => setModalVisible(true);
-  const closeModal = () => setModalVisible(false);
-
   return (
     <Router>
-      <div>
-        {/* This button will trigger the modal */}
-        <button
-          onClick={openModal}
-          style={{
-            padding: '10px',
-            backgroundColor: '#28a745',
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          Get Instant Quote
-        </button>
-
-        {/* Render the modal if the state is true */}
-        <Modal isVisible={isModalVisible} onClose={closeModal}>
-          {/* The quote form inside the modal */}
-          <PreQuoteDetailsForm />
-        </Modal>
-
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/car-details" element={<PreQuoteDetailsForm />} />
-          <Route path="/quote" element={<QuotePage />} />
-          <Route path="/booking" element={<BookingConfirmation />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/dashboard/bookings"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Bookings />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/services"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Services />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/availability"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Availability />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/settings"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Settings />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </Router>
   );
 }
 
 export default App;
-

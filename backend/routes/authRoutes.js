@@ -1,9 +1,10 @@
-// /backend/routes/authRoutes.js
+// /routes/authRoutes.js
 const express = require('express');
-const { signup, login } = require('../controllers/authController');
+const { businessSignup, businessLogin } = require('../controllers/businessDashboardController');
 const router = express.Router();
 
-router.post('/signup', signup);
-router.post('/login', login);
+// Business login and signup routes
+router.post('/signup', businessSignup); // Use businessSignup
+router.post('/login', businessLogin);   // Use businessLogin
 
 module.exports = router;

@@ -1,35 +1,25 @@
-// /backend/models/Business.js
+// models/Business.js
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-// /backend/models/Business.js
-const serviceSchema = new mongoose.Schema({
+const ServiceSchema = new Schema({
   serviceName: { type: String, required: true },
   price: { type: Number, required: true },
-  duration: { type: Number, required: true }, // Duration in minutes
+  duration: { type: Number, required: true }, // in minutes
 });
 
-
-const availabilitySchema = new mongoose.Schema({
-  day: { type: String, required: true },  // e.g., "Monday", "Tuesday"
-  startTime: { type: String, required: true },  // e.g., "09:00"
-  endTime: { type: String, required: true },    // e.g., "17:00"
+const AvailabilitySchema = new Schema({
+  day: { type: String, required: true },
+  startTime: { type: String, required: true },
+  endTime: { type: String, required: true },
 });
 
+const BusinessSchema = new Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  services: [ServiceSchema],
+  availability: [AvailabilitySchema],
+}, { timestamps: true });
 
-const businessSchema = new mongoose.Schema({
-  name: String,
-  address: String,
-  services: [serviceSchema],  // Array of services
-  pricing: {
-    small: Number,
-    medium: Number,
-    large: Number,
-    dirtySurcharge: Number
-  },
-  availability: [availabilitySchema]  // Array of availability objects
-}, { collection: 'business' });
-
-
-const Business = mongoose.model('Business', businessSchema);
-module.exports = Business;
-
+module.exports = mongoose.model('Business', BusinessSchema);

@@ -1,69 +1,78 @@
-// /backend/controllers/businessDashboardController.js
-const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const Booking = require('../models/Booking'); // Assuming you have a Booking model
-const Business = require('../models/Business'); // Import the Business model
+const Booking = require('../models/Booking');
+const Business = require('../models/Business');
 
+// 1. Signup Function
+exports.businessSignup = async (req, res) => {
+  const { email, password, name } = req.body;
 
-// Create Test Booking (Temporary)
-//exports.createTestBooking = async (req, res) => {
-//    const { businessId, customerId, service, price, time } = req.body;
-//  
-//    try {
-//      const newBooking = new Booking({
-//        businessId,
-//        customerId,
-//        service,
-//        price,
-//        time,
-//        status: 'pending'
-//      });
-//  
-//      await newBooking.save();
-//      res.status(201).json({ message: 'Booking created successfully', booking: newBooking });
-//    } catch (error) {
-//      console.error('Error creating booking:', error);
-//      res.status(500).json({ error: 'Error creating booking' });
-//    }
-//  };
+  try {
+    const existingBusiness = await Business.findOne({ email });
+    if (existingBusiness) {
+      return res.status(400).json({ error: 'Business already exists' });
+    }
 
-// /backend/controllers/businessDashboardController.js
+    const hashedPassword = await bcrypt.hash(password, 10);
 
+    const newBusiness = new Business({
+      email,
+      password: hashedPassword,
+      name,
+    });
 
+    await newBusiness.save();
+
+    const token = jwt.sign({ businessId: newBusiness._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.status(201).json({ token, businessId: newBusiness._id });
+  } catch (error) {
+    res.status(500).json({ error: 'Error during signup' });
+  }
+};
+
+// 2. Login Function
 exports.businessLogin = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-      const user = await User.findOne({ email });
-      if (!user || !(await bcrypt.compare(password, user.password))) {
-          return res.status(401).json({ error: 'Invalid email or password' });
-      }
+    // Check if the business exists
+    const business = await Business.findOne({ email });
+    if (!business) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
 
-      const token = jwt.sign({ userId: user._id, businessId: user.businessId }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      res.json({ token, businessId: user.businessId });
+    // Compare passwords using bcrypt
+    const isMatch = await bcrypt.compare(password, business.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Generate JWT token if login is successful
+    const token = jwt.sign({ businessId: business._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.json({ token, businessId: business._id });
   } catch (error) {
-      console.error('Error during login:', error);
-      res.status(500).json({ error: 'Server error' });
+    console.error('Error during login:', error);
+    res.status(500).json({ error: 'Server error during login' });
   }
 };
 
-exports.getBusinessBookings = async (req, res) => {
+// 3. Get Bookings
+exports.getBookings = async (req, res) => {
   try {
-      const bookings = await Booking.find({ businessId: req.user.businessId });
-      res.json(bookings);
+    const bookings = await Booking.find();
+    res.json(bookings);
   } catch (error) {
-      console.error('Error fetching bookings:', error);
-      res.status(500).json({ error: 'Error fetching bookings' });
+    console.error('Error fetching bookings:', error);
+    res.status(500).json({ error: 'Error fetching bookings' });
   }
 };
 
-
+// 4. Submit Booking
 exports.submitBooking = async (req, res) => {
   const { businessId, serviceId, size, condition, bookingTime } = req.body;
 
   try {
-    // Check if the business already has a booking for the same time slot
     const existingBooking = await Booking.findOne({
       businessId,
       "bookingTime.day": bookingTime.day,
@@ -75,29 +84,24 @@ exports.submitBooking = async (req, res) => {
       return res.status(400).json({ error: "Time slot unavailable" });
     }
 
-    // Create the booking if no conflicts
     const newBooking = new Booking({
       businessId,
       serviceId,
       size,
       condition,
       bookingTime,
-      status: "confirmed",  // Skip 'pending' for instant booking
+      status: "confirmed",
     });
 
     await newBooking.save();
     res.status(201).json({ message: "Booking created successfully", booking: newBooking });
-
   } catch (error) {
     console.error("Error creating booking:", error);
     res.status(500).json({ error: "Error creating booking" });
   }
 };
 
-
-
-
-// Reschedule Booking
+// 5. Reschedule Booking
 exports.rescheduleBooking = async (req, res) => {
   const { bookingId, newTime } = req.body;
 
@@ -105,7 +109,6 @@ exports.rescheduleBooking = async (req, res) => {
     const booking = await Booking.findById(bookingId);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
-    // Update the booking with new time
     booking.time = newTime;
     await booking.save();
 
@@ -116,7 +119,7 @@ exports.rescheduleBooking = async (req, res) => {
   }
 };
 
-// Cancel Booking
+// 6. Cancel Booking
 exports.cancelBooking = async (req, res) => {
   const { bookingId } = req.body;
 
@@ -131,9 +134,25 @@ exports.cancelBooking = async (req, res) => {
   }
 };
 
+// 7. Get Services
+exports.getServices = async (req, res) => {
+  const businessId = req.user.businessId;  // Assuming the businessId is stored in the JWT token
 
-// Add a Service
-//______________________________________________________________________
+  try {
+    const business = await Business.findById(businessId);
+    if (!business) {
+      return res.status(404).json({ error: 'Business not found' });
+    }
+
+    res.status(200).json({ services: business.services });
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    res.status(500).json({ error: 'Error fetching services' });
+  }
+};
+
+
+// 8. Add Service
 exports.addService = async (req, res) => {
   const { businessId, serviceName, price, duration } = req.body;
 
@@ -146,13 +165,12 @@ exports.addService = async (req, res) => {
 
     res.status(201).json({ message: 'Service added successfully', services: business.services });
   } catch (error) {
-    console.error('Error adding service:', error);  // Add this for better debugging
+    console.error('Error adding service:', error);
     res.status(500).json({ error: 'Error adding service' });
   }
 };
 
-
-// Update a Service
+// 9. Update Service
 exports.updateService = async (req, res) => {
   const { businessId, serviceId, serviceName, price, duration } = req.body;
 
@@ -175,8 +193,7 @@ exports.updateService = async (req, res) => {
   }
 };
 
-
-// Delete a Service
+// 10. Delete Service
 exports.deleteService = async (req, res) => {
   const { businessId, serviceId } = req.body;
 
@@ -184,12 +201,11 @@ exports.deleteService = async (req, res) => {
     const business = await Business.findById(businessId);
     if (!business) return res.status(404).json({ error: 'Business not found' });
 
-    // Pull the service from the array by its _id
     const service = business.services.id(serviceId);
     if (!service) return res.status(404).json({ error: 'Service not found' });
 
-    business.services.pull(serviceId);  // Use pull() to remove the service from the array
-    await business.save();  // Save the changes to the business document
+    business.services.pull(serviceId);
+    await business.save();
 
     res.status(200).json({ message: 'Service deleted successfully', services: business.services });
   } catch (error) {
@@ -198,25 +214,7 @@ exports.deleteService = async (req, res) => {
   }
 };
 
-
-// Get Services
-exports.getServices = async (req, res) => {
-  const { businessId } = req.query;
-
-  try {
-    const business = await Business.findById(businessId);
-    if (!business) return res.status(404).json({ error: 'Business not found' });
-
-    res.status(200).json({ services: business.services });
-  } catch (error) {
-    console.error('Error fetching services:', error);
-    res.status(500).json({ error: 'Error fetching services' });
-  }
-};
-
-
-// Add Availability
-//_______________________________________________________________________________________________
+// 11. Add Availability
 exports.addAvailability = async (req, res) => {
   const { businessId, day, startTime, endTime } = req.body;
 
@@ -234,7 +232,22 @@ exports.addAvailability = async (req, res) => {
   }
 };
 
-// Update Availability
+// 12. Get Availability
+exports.getAvailability = async (req, res) => {
+  const businessId = req.user.businessId;
+
+  try {
+    const business = await Business.findById(businessId);
+    if (!business) return res.status(404).json({ error: 'Business not found' });
+
+    res.status(200).json(business.availability);
+  } catch (error) {
+    console.error('Error fetching availability:', error);
+    res.status(500).json({ error: 'Error fetching availability' });
+  }
+};
+
+// 13. Update Availability
 exports.updateAvailability = async (req, res) => {
   const { businessId, availabilityId, day, startTime, endTime } = req.body;
 
@@ -248,8 +261,8 @@ exports.updateAvailability = async (req, res) => {
     availability.day = day;
     availability.startTime = startTime;
     availability.endTime = endTime;
-    await business.save();
 
+    await business.save();
     res.status(200).json({ message: 'Availability updated successfully', availability: business.availability });
   } catch (error) {
     console.error('Error updating availability:', error);
@@ -257,13 +270,16 @@ exports.updateAvailability = async (req, res) => {
   }
 };
 
-// Delete Availability
+// 14. Delete Availability
 exports.deleteAvailability = async (req, res) => {
   const { businessId, availabilityId } = req.body;
 
   try {
     const business = await Business.findById(businessId);
     if (!business) return res.status(404).json({ error: 'Business not found' });
+
+    const availability = business.availability.id(availabilityId);
+    if (!availability) return res.status(404).json({ error: 'Availability not found' });
 
     business.availability.pull(availabilityId);
     await business.save();
@@ -275,17 +291,17 @@ exports.deleteAvailability = async (req, res) => {
   }
 };
 
-// Get Availability
-exports.getAvailability = async (req, res) => {
-  const { businessId } = req.query;
+// 15. Get Settings
+exports.getSettings = async (req, res) => {
+  const businessId = req.user.businessId;
 
   try {
     const business = await Business.findById(businessId);
     if (!business) return res.status(404).json({ error: 'Business not found' });
 
-    res.status(200).json({ availability: business.availability });
+    res.status(200).json(business.settings);
   } catch (error) {
-    console.error('Error fetching availability:', error);
-    res.status(500).json({ error: 'Error fetching availability' });
+    console.error('Error fetching settings:', error);
+    res.status(500).json({ error: 'Error fetching settings' });
   }
 };
