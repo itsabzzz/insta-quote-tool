@@ -221,12 +221,16 @@ exports.deleteService = async (req, res) => {
 
 // 11. Add Availability
 exports.addAvailability = async (req, res) => {
-  const { businessId, day, startTime, endTime } = req.body;
+  const { day, startTime, endTime } = req.body;
+  const businessId = req.user.businessId;  // Extract businessId from the authenticated user (assuming it's stored in JWT)
 
   try {
     const business = await Business.findById(businessId);
-    if (!business) return res.status(404).json({ error: 'Business not found' });
+    if (!business) {
+      return res.status(404).json({ error: 'Business not found' });
+    }
 
+    // Add new availability slot
     business.availability.push({ day, startTime, endTime });
     await business.save();
 
@@ -236,6 +240,7 @@ exports.addAvailability = async (req, res) => {
     res.status(500).json({ error: 'Error adding availability' });
   }
 };
+
 
 // 12. Get Availability
 exports.getAvailability = async (req, res) => {
