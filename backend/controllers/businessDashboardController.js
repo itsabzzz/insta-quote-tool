@@ -155,21 +155,25 @@ exports.getServices = async (req, res) => {
 
 // 8. Add Service
 exports.addService = async (req, res) => {
-  const { businessId, serviceName, price, duration } = req.body;
+  const { businessId } = req.user;  // Ensure this contains businessId
+  const { serviceName, price, duration } = req.body;
+  console.log("Business ID from token:", businessId);
 
   try {
-    const business = await Business.findById(businessId);
+    const business = await Business.findById(businessId);  // Find the business by ID
     if (!business) return res.status(404).json({ error: 'Business not found' });
 
     business.services.push({ serviceName, price, duration });
     await business.save();
 
-    res.status(201).json({ message: 'Service added successfully', services: business.services });
+    res.status(201).json({ message: 'Service added successfully', service: { serviceName, price, duration } });
   } catch (error) {
     console.error('Error adding service:', error);
     res.status(500).json({ error: 'Error adding service' });
   }
 };
+
+
 
 // 9. Update Service
 exports.updateService = async (req, res) => {
