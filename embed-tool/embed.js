@@ -1,6 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
   (function() {
-  
+
+  // Function to get URL query parameters
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+
+  const businessId = getQueryParam('businessId');
+
   // Create the button to open the modal
   var openBtn = document.createElement('button');
   openBtn.innerText = 'Get an Instant Quote';
@@ -27,24 +35,23 @@ document.addEventListener('DOMContentLoaded', function() {
   overlay.style.zIndex = '999';
   document.body.appendChild(overlay);
 
-// Create the modal
-var modal = document.createElement('div');
-modal.style.position = 'fixed';
-modal.style.top = '50%';
-modal.style.left = '50%';
-modal.style.transform = 'translate(-50%, -50%)';
-modal.style.width = '90%';
-modal.style.maxWidth = '400px';
-modal.style.height = '300px'; // Set a fixed height for consistent size
-modal.style.overflowY = 'auto'; // Allows scrolling if content overflows
-modal.style.backgroundColor = '#fff';
-modal.style.padding = '20px';
-modal.style.borderRadius = '10px';
-modal.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
-modal.style.zIndex = '1001';
-modal.style.display = 'none';
-document.body.appendChild(modal);
-
+  // Create the modal
+  var modal = document.createElement('div');
+  modal.style.position = 'fixed';
+  modal.style.top = '50%';
+  modal.style.left = '50%';
+  modal.style.transform = 'translate(-50%, -50%)';
+  modal.style.width = '90%';
+  modal.style.maxWidth = '400px';
+  modal.style.height = '300px';
+  modal.style.overflowY = 'auto';
+  modal.style.backgroundColor = '#fff';
+  modal.style.padding = '20px';
+  modal.style.borderRadius = '10px';
+  modal.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+  modal.style.zIndex = '1001';
+  modal.style.display = 'none';
+  document.body.appendChild(modal);
 
   // Create close button for the modal
   var closeBtn = document.createElement('button');
@@ -109,12 +116,20 @@ document.body.appendChild(modal);
     var selectService = document.createElement('select');
     selectService.style.display = 'block';
     selectService.style.marginTop = '10px';
-    ['Exterior Wash', 'Interior Detailing', 'Full Package'].forEach(function(service) {
-      var option = document.createElement('option');
-      option.value = service.toLowerCase().replace(' ', '-');
-      option.text = service;
-      selectService.appendChild(option);
-    });
+
+    // Fetch services from the backend using the business ID
+    fetch(`https://insta-quote-tool-production.up.railway.app/api/business-dashboard/services?businessId=${businessId}`)
+      .then(response => response.json())
+      .then(data => {
+        selectService.innerHTML = ''; // Clear previous options
+        data.services.forEach(service => {
+          var option = document.createElement('option');
+          option.value = service._id;
+          option.text = service.serviceName;
+          selectService.appendChild(option);
+        });
+      })
+      .catch(error => console.error('Error fetching services:', error));
 
     form.appendChild(labelSize);
     form.appendChild(selectSize);
@@ -141,182 +156,179 @@ document.body.appendChild(modal);
   }
 
   // Screen Two: Booking Date and Address
-// Screen Two: Booking Date and Address
-function showScreenTwo(size, condition, service) {
-  modal.innerHTML = '';
-  modal.appendChild(closeBtn);
+  function showScreenTwo(size, condition, service) {
+    modal.innerHTML = '';
+    modal.appendChild(closeBtn);
 
-  var form = document.createElement('form');
+    var form = document.createElement('form');
 
-  // Booking date input
-  var labelDate = document.createElement('label');
-  labelDate.innerText = 'Select Booking Date and Time:';
-  var inputDate = document.createElement('input');
-  inputDate.type = 'datetime-local';
-  inputDate.style.display = 'block';
-  inputDate.style.marginTop = '10px';
+    // Booking date input
+    var labelDate = document.createElement('label');
+    labelDate.innerText = 'Select Booking Date and Time:';
+    var inputDate = document.createElement('input');
+    inputDate.type = 'datetime-local';
+    inputDate.style.display = 'block';
+    inputDate.style.marginTop = '10px';
 
-  // Customer postcode input with auto-complete for address
-  var labelAddress = document.createElement('label');
-  labelAddress.innerText = 'Enter Your Postcode:';
-  var inputPostcode = document.createElement('input');
-  inputPostcode.type = 'text';
-  inputPostcode.style.display = 'inline-block';
-  inputPostcode.style.width = '60%';
-  inputPostcode.style.marginTop = '10px';
-  inputPostcode.placeholder = 'Start typing your postcode...';
+    // Customer postcode input with auto-complete for address
+    var labelAddress = document.createElement('label');
+    labelAddress.innerText = 'Enter Your Postcode:';
+    var inputPostcode = document.createElement('input');
+    inputPostcode.type = 'text';
+    inputPostcode.style.display = 'inline-block';
+    inputPostcode.style.width = '60%';
+    inputPostcode.style.marginTop = '10px';
+    inputPostcode.placeholder = 'Start typing your postcode...';
 
-  // Dropdown for address suggestions
-  var addressDropdown = document.createElement('select');
-  addressDropdown.style.display = 'block';
-  addressDropdown.style.marginTop = '10px';
-  addressDropdown.style.width = '100%';
+    // Dropdown for address suggestions
+    var addressDropdown = document.createElement('select');
+    addressDropdown.style.display = 'block';
+    addressDropdown.style.marginTop = '10px';
+    addressDropdown.style.width = '100%';
 
-  // Customer house number input
-  var labelHouseNumber = document.createElement('label');
-  labelHouseNumber.innerText = 'Enter House Number/Name:';
-  var inputHouseNumber = document.createElement('input');
-  inputHouseNumber.type = 'text';
-  inputHouseNumber.placeholder = 'House number/name';
-  inputHouseNumber.style.display = 'block';
-  inputHouseNumber.style.width = '30%';
-  inputHouseNumber.style.marginTop = '10px';
+    // Customer house number input
+    var labelHouseNumber = document.createElement('label');
+    labelHouseNumber.innerText = 'Enter House Number/Name:';
+    var inputHouseNumber = document.createElement('input');
+    inputHouseNumber.type = 'text';
+    inputHouseNumber.placeholder = 'House number/name';
+    inputHouseNumber.style.display = 'block';
+    inputHouseNumber.style.width = '30%';
+    inputHouseNumber.style.marginTop = '10px';
 
-  // Fetch address suggestions
-  inputPostcode.oninput = function() {
-    if (inputPostcode.value.length >= 3) {
-      fetch(`https://insta-quote-tool-production.up.railway.app/api/places?input=${inputPostcode.value}`)
-        .then(response => response.json())
-        .then(data => {
-          addressDropdown.innerHTML = '';
-          data.predictions.forEach(prediction => {
-            var option = document.createElement('option');
-            option.value = prediction.description;
-            option.text = prediction.description;
-            addressDropdown.appendChild(option);
-          });
-        })
-        .catch(error => console.error('Error fetching address suggestions:', error));
-    }
-  };
+    // Fetch address suggestions
+    inputPostcode.oninput = function() {
+      if (inputPostcode.value.length >= 3) {
+        fetch(`https://insta-quote-tool-production.up.railway.app/api/places?input=${inputPostcode.value}`)
+          .then(response => response.json())
+          .then(data => {
+            addressDropdown.innerHTML = '';
+            data.predictions.forEach(prediction => {
+              var option = document.createElement('option');
+              option.value = prediction.description;
+              option.text = prediction.description;
+              addressDropdown.appendChild(option);
+            });
+          })
+          .catch(error => console.error('Error fetching address suggestions:', error));
+      }
+    };
 
-  form.appendChild(labelDate);
-  form.appendChild(inputDate);
-  form.appendChild(labelAddress);
-  form.appendChild(inputPostcode);
-  form.appendChild(addressDropdown);
-  form.appendChild(labelHouseNumber);
-  form.appendChild(inputHouseNumber);
+    form.appendChild(labelDate);
+    form.appendChild(inputDate);
+    form.appendChild(labelAddress);
+    form.appendChild(inputPostcode);
+    form.appendChild(addressDropdown);
+    form.appendChild(labelHouseNumber);
+    form.appendChild(inputHouseNumber);
 
-  // Next button
-  var nextBtn = document.createElement('button');
-  nextBtn.innerText = 'Next';
-  nextBtn.style.marginTop = '20px';
-  nextBtn.onclick = function(e) {
-    e.preventDefault();
-    if (inputDate.value && inputHouseNumber.value && addressDropdown.value) {
-      var fullAddress = `${inputHouseNumber.value}, ${addressDropdown.value}`;
-      showScreenThree(size, condition, service, inputDate.value, fullAddress);
-    } else {
-      alert('Please fill in all fields.');
-    }
-  };
+    // Next button
+    var nextBtn = document.createElement('button');
+    nextBtn.innerText = 'Next';
+    nextBtn.style.marginTop = '20px';
+    nextBtn.onclick = function(e) {
+      e.preventDefault();
+      if (inputDate.value && inputHouseNumber.value && addressDropdown.value) {
+        var fullAddress = `${inputHouseNumber.value}, ${addressDropdown.value}`;
+        showScreenThree(size, condition, service, inputDate.value, fullAddress);
+      } else {
+        alert('Please fill in all fields.');
+      }
+    };
 
-  form.appendChild(nextBtn);
-  modal.appendChild(form);
-}
+    form.appendChild(nextBtn);
+    modal.appendChild(form);
+  }
 
-  
+  // Screen Three: Quote Result and Booking
+  function showScreenThree(size, condition, service, dateTime, address) {
+    modal.innerHTML = '';
+    modal.appendChild(closeBtn);
 
-// Screen Three: Quote Result and Booking
-function showScreenThree(size, condition, service, dateTime, address) {
-  modal.innerHTML = '';
-  modal.appendChild(closeBtn);
+    // Send data to the backend to calculate the quote
+    fetch('https://insta-quote-tool-production.up.railway.app/get-quote', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ size: size, condition: condition, service: service })
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Show the fetched quote and customer details
+      var quoteContainer = document.createElement('div');
+      quoteContainer.innerHTML = `<h2>Your Quote</h2>
+                                  <p>Your estimated quote is: $${data.price}</p>
+                                  <p>Details:</p>
+                                  <ul>
+                                    <li>Car Size: ${size}</li>
+                                    <li>Condition: ${condition}</li>
+                                    <li>Service: ${service}</li>
+                                    <li>Booking Date and Time: ${dateTime}</li>
+                                    <li>Address: ${address}</li>
+                                  </ul>`;
+      modal.appendChild(quoteContainer);
 
-  // Send data to the backend to calculate the quote
-  fetch('https://insta-quote-tool-production.up.railway.app/get-quote', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ size: size, condition: condition, service: service })
-  })
-  .then(response => response.json())
-  .then(data => {
-    // Show the fetched quote and customer details
-    var quoteContainer = document.createElement('div');
-    quoteContainer.innerHTML = `<h2>Your Quote</h2>
-                                <p>Your estimated quote is: $${data.price}</p>
-                                <p>Details:</p>
-                                <ul>
-                                  <li>Car Size: ${size}</li>
-                                  <li>Condition: ${condition}</li>
-                                  <li>Service: ${service}</li>
-                                  <li>Booking Date and Time: ${dateTime}</li>
-                                  <li>Address: ${address}</li>
-                                </ul>`;
-    modal.appendChild(quoteContainer);
+      // Continue to booking button
+      var continueBtn = document.createElement('button');
+      continueBtn.innerText = 'Continue to Booking';
+      continueBtn.style.marginTop = '20px';
+      continueBtn.onclick = function() {
+        modal.innerHTML = '';  // Clear the modal content
 
-    // Continue to booking button
-    var continueBtn = document.createElement('button');
-    continueBtn.innerText = 'Continue to Booking';
-    continueBtn.style.marginTop = '20px';
-    continueBtn.onclick = function() {
-      modal.innerHTML = '';  // Clear the modal content
+        // Email intake form
+        var labelEmail = document.createElement('label');
+        labelEmail.innerText = 'Enter Email:';
+        var inputEmail = document.createElement('input');
+        inputEmail.type = 'email';
+        inputEmail.style.display = 'block';
+        inputEmail.style.marginTop = '10px';
 
-      // Email intake form
-      var labelEmail = document.createElement('label');
-      labelEmail.innerText = 'Enter Email:';
-      var inputEmail = document.createElement('input');
-      inputEmail.type = 'email';
-      inputEmail.style.display = 'block';
-      inputEmail.style.marginTop = '10px';
+        var bookNowBtn = document.createElement('button');
+        bookNowBtn.innerText = 'Book Now';
+        bookNowBtn.style.marginTop = '20px';
 
-      var bookNowBtn = document.createElement('button');
-      bookNowBtn.innerText = 'Book Now';
-      bookNowBtn.style.marginTop = '20px';
+        // Booking submission logic after taking email
+        bookNowBtn.onclick = function() {
+          const email = inputEmail.value;
 
-      // Booking submission logic after taking email
-      bookNowBtn.onclick = function() {
-        const email = inputEmail.value;
+          if (!email) {
+            alert('Please enter your email.');
+            return;
+          }
 
-        if (!email) {
-          alert('Please enter your email.');
-          return;
-        }
+          // Submit the booking with email
+          fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ size, condition, service, dateTime, address, email })
+          })
+          .then(response => response.json())
+          .then(data => {
+            modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
+          })
+          .catch(error => console.error('Error submitting booking:', error));
+        };
 
-        // Submit the booking with email
-        fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ size, condition, service, dateTime, address, email })
-        })
-        .then(response => response.json())
-        .then(data => {
-          modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
-        })
-        .catch(error => console.error('Error submitting booking:', error));
+        modal.appendChild(labelEmail);
+        modal.appendChild(inputEmail);
+        modal.appendChild(bookNowBtn);
       };
 
-      modal.appendChild(labelEmail);
-      modal.appendChild(inputEmail);
-      modal.appendChild(bookNowBtn);
-    };
+      modal.appendChild(continueBtn);
 
-    modal.appendChild(continueBtn);
+      const closeQuoteBtn = document.createElement('button');
+      closeQuoteBtn.innerText = 'Close';
+      closeQuoteBtn.onclick = function() {
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
+      };
+      modal.appendChild(closeQuoteBtn);
+    })
+    .catch(error => console.error('Error:', error));
+  }
 
-    const closeQuoteBtn = document.createElement('button');
-    closeQuoteBtn.innerText = 'Close';
-    closeQuoteBtn.onclick = function() {
-      modal.style.display = 'none';
-      overlay.style.display = 'none';
-    };
-    modal.appendChild(closeQuoteBtn);
-  })
-  .catch(error => console.error('Error:', error));
-}
-
-})();
+  })();
 });
