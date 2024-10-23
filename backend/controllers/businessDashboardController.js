@@ -70,7 +70,7 @@ exports.getBookings = async (req, res) => {
 
 // 4. Submit Booking
 exports.submitBooking = async (req, res) => {
-  const { businessId, serviceId, size, condition, bookingTime } = req.body;
+  const { businessId, serviceId, size, condition, bookingTime, customerEmail } = req.body;
 
   try {
     const existingBooking = await Booking.findOne({
@@ -90,7 +90,8 @@ exports.submitBooking = async (req, res) => {
       size,
       condition,
       bookingTime,
-      status: "confirmed",
+      status: "pending",  // Default to pending
+      customerEmail
     });
 
     await newBooking.save();
@@ -305,3 +306,38 @@ exports.getSettings = async (req, res) => {
     res.status(500).json({ error: 'Error fetching settings' });
   }
 };
+
+// 16 Approve Booking
+exports.approveBooking = async (req, res) => {
+  const { bookingId } = req.body;
+
+  try {
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    booking.status = 'approved';
+    await booking.save();
+    res.status(200).json({ message: 'Booking approved successfully', booking });
+  } catch (error) {
+    res.status(500).json({ error: 'Error approving booking' });
+  }
+};
+
+// 17 Decline Booking
+exports.declineBooking = async (req, res) => {
+  const { bookingId } = req.body;
+
+  try {
+    const booking = await Booking.findByIdAndDelete(bookingId);
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    res.status(200).json({ message: 'Booking declined successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error declining booking' });
+  }
+};
+
