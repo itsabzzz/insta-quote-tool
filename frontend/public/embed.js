@@ -9,6 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const businessId = getQueryParam('businessId');
 
+  // Ensure businessId is provided
+  if (!businessId) {
+    console.error('Business ID is missing or invalid.');
+    return;
+  }
+
   // Create the button to open the modal
   var openBtn = document.createElement('button');
   openBtn.innerText = 'Get an Instant Quote';
@@ -119,13 +125,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Fetch services from the backend using the business ID
     fetch(`https://insta-quote-tool-production.up.railway.app/api/business-dashboard/services?businessId=${businessId}`)
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error fetching services');
+        }
+        return response.json();
+      })
       .then(data => {
         selectService.innerHTML = ''; // Clear previous options
         data.services.forEach(service => {
           var option = document.createElement('option');
           option.value = service._id;
-          option.text = service.serviceName;
+          option.text = `${service.serviceName} - $${service.price} (${service.duration} mins)`;
           selectService.appendChild(option);
         });
       })
