@@ -243,10 +243,15 @@ document.addEventListener('DOMContentLoaded', function () {
       inputPostcode.oninput = function () {
         if (inputPostcode.value.length >= 3) {
           fetch(`https://insta-quote-tool-production.up.railway.app/api/places?input=${inputPostcode.value}`)
-            .then(response => response.json())
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Error fetching address suggestions');
+              }
+              return response.json();
+            })
             .then(data => {
-              addressDropdown.innerHTML = '';
-              data.predictions.forEach(prediction => {
+              addressDropdown.innerHTML = ''; // Clear previous options
+              data.forEach(prediction => {
                 var option = document.createElement('option');
                 option.value = prediction.description;
                 option.text = prediction.description;

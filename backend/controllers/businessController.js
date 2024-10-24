@@ -7,16 +7,32 @@ const googleApiKey = process.env.GOOGLE_API_KEY;
 // Get Google Places Autocomplete
 exports.getPlaces = async (req, res) => {
   const { input } = req.query;
+  const googleApiKey = process.env.GOOGLE_API_KEY;
+
+  if (!input) {
+    return res.status(400).json({ error: 'Input query is required' });
+  }
+
   try {
-    const response = await axios.get(`https://maps.googleapis.com/maps/api/place/autocomplete/json`, {
-      params: { input, key: googleApiKey }
+    const response = await axios.get('https://maps.googleapis.com/maps/api/place/autocomplete/json', {
+      params: {
+        input,
+        key: googleApiKey,
+      },
     });
-    res.json(response.data);
+
+    if (response.data.status === 'OK') {
+      res.json(response.data.predictions);  // Return the predictions to the frontend
+    } else {
+      res.status(400).json({ error: `Error fetching places: ${response.data.status}` });
+    }
   } catch (error) {
     console.error('Error fetching address suggestions:', error.message);
     res.status(500).json({ error: 'Error fetching address suggestions' });
   }
 };
+
+
 
 // Get Quote Calculation
 exports.getQuote = (req, res) => {
