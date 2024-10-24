@@ -1,19 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
   (function() {
+    // Use the businessId from the global variable
+    const businessId = window.businessId;
+    
+    console.log('Business ID:', businessId);  // Log to check if businessId is valid
 
-  // Function to get URL query parameters
-  function getQueryParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-  }
-
-  const businessId = getQueryParam('businessId');
-
-  // Ensure businessId is provided
-  if (!businessId) {
-    console.error('Business ID is missing or invalid.');
-    return;
-  }
+    // Ensure businessId is provided
+    if (!businessId) {
+      console.error('Business ID is missing or invalid.');
+      return;
+    }
+  
 
   // Create the button to open the modal
   var openBtn = document.createElement('button');

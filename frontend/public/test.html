@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Embed Script</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <p>Test Embed</p>
 </head>
 <body>
-    <h1>Test Your Instant Quote Tool</h1>
-    <p>This is where the Instant Quote button will appear.</p>
-
-    <!-- Embed the script with the correct business ID -->
-    <script src="https://itsabzzz.github.io/insta-quote-tool/embed.js?businessId=6716cdb0ac708a9e12ac31ee"></script>
+  <p>Test the embed script:</p>
+  
+  <!-- Pass the business ID into the script using a global variable -->
+  <script>
+    window.businessId = '6716cdb0ac708a9e12ac31ee';
+  </script>
+  
+  <script src="http://localhost:3000/embed.js"></script>
 </body>
 </html>
