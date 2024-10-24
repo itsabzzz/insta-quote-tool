@@ -137,7 +137,11 @@ exports.cancelBooking = async (req, res) => {
 
 // 7. Get Services
 exports.getServices = async (req, res) => {
-  const businessId = req.user.businessId;  // Assuming the businessId is stored in the JWT token
+  const businessId = req.query.businessId;  // Get the businessId from query params
+
+  if (!businessId) {
+    return res.status(400).json({ error: 'Business ID is required' });
+  }
 
   try {
     const business = await Business.findById(businessId);
@@ -151,6 +155,7 @@ exports.getServices = async (req, res) => {
     res.status(500).json({ error: 'Error fetching services' });
   }
 };
+
 
 
 // 8. Add Service

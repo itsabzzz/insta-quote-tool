@@ -10,7 +10,9 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000' // Allow requests from this origin
+}));
 app.use(express.json());
 
 // Database Connection
