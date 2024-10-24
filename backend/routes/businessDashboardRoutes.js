@@ -35,7 +35,7 @@ router.put('/booking/decline', authMiddleware, declineBooking);
 
 
 // Services routes
-router.get('/services', authMiddleware, getServices);
+router.get('/services', getServices);
 router.post('/service/add', authMiddleware, addService);
 router.put('/service/update', authMiddleware, updateService);
 router.delete('/service/delete', authMiddleware, deleteService);
