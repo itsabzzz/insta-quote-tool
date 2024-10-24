@@ -286,94 +286,110 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Screen Three: Quote Result and Booking
-    function showScreenThree(size, condition, service, dateTime, address) {
-      modal.innerHTML = '';
-      modal.appendChild(closeBtn);
+function showScreenThree(size, condition, service, dateTime, address) {
+  modal.innerHTML = '';
+  modal.appendChild(closeBtn);
 
-      // Send data to the backend to calculate the quote
-      fetch('https://insta-quote-tool-production.up.railway.app/get-quote', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ size: size, condition: condition, service: service })
-      })
-        .then(response => response.json())
-        .then(data => {
-          // Show the fetched quote and customer details
-          var quoteContainer = document.createElement('div');
-          quoteContainer.innerHTML = `<h2>Your Quote</h2>
-                                  <p>Your estimated quote is: $${data.price}</p>
-                                  <p>Details:</p>
-                                  <ul>
-                                    <li>Car Size: ${size}</li>
-                                    <li>Condition: ${condition}</li>
-                                    <li>Service: ${service}</li>
-                                    <li>Booking Date and Time: ${dateTime}</li>
-                                    <li>Address: ${address}</li>
-                                  </ul>`;
-          modal.appendChild(quoteContainer);
-
-          // Continue to booking button
-          var continueBtn = document.createElement('button');
-          continueBtn.innerText = 'Continue to Booking';
-          continueBtn.style.marginTop = '20px';
-          continueBtn.onclick = function () {
-            modal.innerHTML = '';  // Clear the modal content
-
-            // Email intake form
-            var labelEmail = document.createElement('label');
-            labelEmail.innerText = 'Enter Email:';
-            var inputEmail = document.createElement('input');
-            inputEmail.type = 'email';
-            inputEmail.style.display = 'block';
-            inputEmail.style.marginTop = '10px';
-
-            var bookNowBtn = document.createElement('button');
-            bookNowBtn.innerText = 'Book Now';
-            bookNowBtn.style.marginTop = '20px';
-
-            // Booking submission logic after taking email
-            bookNowBtn.onclick = function () {
-              const email = inputEmail.value;
-
-              if (!email) {
-                alert('Please enter your email.');
-                return;
-              }
-
-              // Submit the booking with email
-              fetch('https://insta-quote-tool-production.up.railway.app/submit-booking', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ size, condition, service, dateTime, address, email })
-              })
-                .then(response => response.json())
-                .then(data => {
-                  modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
-                })
-                .catch(error => console.error('Error submitting booking:', error));
-            };
-
-            modal.appendChild(labelEmail);
-            modal.appendChild(inputEmail);
-            modal.appendChild(bookNowBtn);
-          };
-
-          modal.appendChild(continueBtn);
-
-          const closeQuoteBtn = document.createElement('button');
-          closeQuoteBtn.innerText = 'Close';
-          closeQuoteBtn.onclick = function () {
-            modal.style.display = 'none';
-            overlay.style.display = 'none';
-          };
-          modal.appendChild(closeQuoteBtn);
-        })
-        .catch(error => console.error('Error:', error));
+  // Send data to the backend to calculate the quote
+  fetch('https://insta-quote-tool-production.up.railway.app/api/business/get-quote', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ size, condition, service })
+  })
+  .then(response => {
+    // Check if the response is ok (status code 200-299)
+    if (!response.ok) {
+      throw new Error('Error fetching quote');
     }
+    return response.json();
+  })
+  .then(data => {
+    // Show the fetched quote and customer details
+    var quoteContainer = document.createElement('div');
+    quoteContainer.innerHTML = `
+      <h2>Your Quote</h2>
+      <p>Your estimated quote is: $${data.price}</p>
+      <p>Details:</p>
+      <ul>
+        <li>Car Size: ${size}</li>
+        <li>Condition: ${condition}</li>
+        <li>Service: ${service}</li>
+        <li>Booking Date and Time: ${dateTime}</li>
+        <li>Address: ${address}</li>
+      </ul>`;
+    modal.appendChild(quoteContainer);
+
+    // Continue to booking button
+    var continueBtn = document.createElement('button');
+    continueBtn.innerText = 'Continue to Booking';
+    continueBtn.style.marginTop = '20px';
+    continueBtn.onclick = function () {
+      modal.innerHTML = '';  // Clear the modal content
+
+      // Email intake form
+      var labelEmail = document.createElement('label');
+      labelEmail.innerText = 'Enter Email:';
+      var inputEmail = document.createElement('input');
+      inputEmail.type = 'email';
+      inputEmail.style.display = 'block';
+      inputEmail.style.marginTop = '10px';
+
+      var bookNowBtn = document.createElement('button');
+      bookNowBtn.innerText = 'Book Now';
+      bookNowBtn.style.marginTop = '20px';
+
+      // Booking submission logic after taking email
+      bookNowBtn.onclick = function () {
+        const email = inputEmail.value;
+
+        if (!email) {
+          alert('Please enter your email.');
+          return;
+        }
+
+        // Submit the booking with email
+        fetch('https://insta-quote-tool-production.up.railway.app/api/business/submit-booking', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ size, condition, service, dateTime, address, email })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error submitting booking');
+          }
+          return response.json();
+        })
+        .then(data => {
+          modal.innerHTML = `<h2>Booking Confirmation</h2><p>${data.message}</p>`;
+        })
+        .catch(error => console.error('Error submitting booking:', error));
+      };
+
+      modal.appendChild(labelEmail);
+      modal.appendChild(inputEmail);
+      modal.appendChild(bookNowBtn);
+    };
+
+    modal.appendChild(continueBtn);
+
+    const closeQuoteBtn = document.createElement('button');
+    closeQuoteBtn.innerText = 'Close';
+    closeQuoteBtn.onclick = function () {
+      modal.style.display = 'none';
+      overlay.style.display = 'none';
+    };
+    modal.appendChild(closeQuoteBtn);
+  })
+  .catch(error => {
+    console.error('Error fetching quote:', error);
+    alert('There was an issue calculating the quote. Please try again later.');
+  });
+}
+
 
   })();
 });
