@@ -240,17 +240,13 @@ document.addEventListener('DOMContentLoaded', function () {
       inputHouseNumber.style.marginTop = '10px';
 
       // Fetch address suggestions
+      // Fetch address suggestions
       inputPostcode.oninput = function () {
         if (inputPostcode.value.length >= 3) {
-          fetch(`https://insta-quote-tool-production.up.railway.app/api/places?input=${inputPostcode.value}`)
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('Error fetching address suggestions');
-              }
-              return response.json();
-            })
+          fetch(`https://insta-quote-tool-production.up.railway.app/api/business/places?input=${inputPostcode.value}`)
+            .then(response => response.json())
             .then(data => {
-              addressDropdown.innerHTML = ''; // Clear previous options
+              addressDropdown.innerHTML = '';
               data.forEach(prediction => {
                 var option = document.createElement('option');
                 option.value = prediction.description;
@@ -261,6 +257,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(error => console.error('Error fetching address suggestions:', error));
         }
       };
+
 
       form.appendChild(labelDate);
       form.appendChild(inputDate);
